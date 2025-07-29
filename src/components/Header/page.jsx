@@ -1,14 +1,45 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Menu, X, ShoppingCart, User } from "lucide-react"
+import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
+import { createClient } from "@/utils/supabase/client" // ton client Supabase
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [session, setSession] = useState(null)
   const { items } = useCart()
+  const supabase = createClient()
+
+  // Récupérer la session à l'initialisation
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      setSession(data.session)
+      console.log("Session récupérée :", data.session)
+    }
+
+    fetchSession()
+
+    // Abonnement au changement d'état de session
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      console.log("Session changée :", session)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    window.location.href = "/connexion"
+  }
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -24,24 +55,7 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Accueil
-            </Link>
-            <Link href="/acheter/tiktok" className="text-gray-700 hover:text-blue-600 transition-colors">
-              TikTok
-            </Link>
-            <Link href="/acheter/instagram" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Instagram
-            </Link>
-            <Link href="/acheter/youtube" className="text-gray-700 hover:text-blue-600 transition-colors">
-              YouTube
-            </Link>
-            <Link href="/acheter/facebook" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Facebook
-            </Link>
-            <Link href="/formulaire-dessai" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Essai Gratuit
-            </Link>
+            {/* ... tes liens ... */}
           </nav>
 
           {/* Actions */}
@@ -57,12 +71,20 @@ export default function Header() {
                 )}
               </Button>
             </Link>
-            <Link href="/login">
-              <Button variant="outline" size="sm">
-                <User className="w-4 h-4 mr-2" />
-                Connexion
+
+            {session ? (
+              <Button onClick={handleLogout} variant="outline" size="sm">
+                <LogOut className="w-4 h-4 mr-2" />
+                Déconnexion
               </Button>
-            </Link>
+            ) : (
+              <Link href="/connexion">
+                <Button variant="outline" size="sm">
+                  <User className="w-4 h-4 mr-2" />
+                  Connexion
+                </Button>
+              </Link>
+            )}
 
             {/* Mobile menu button */}
             <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -70,29 +92,6 @@ export default function Header() {
             </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            <div className="flex flex-col space-y-2">
-              <Link href="/" className="py-2 text-gray-700 hover:text-blue-600">
-                Accueil
-              </Link>
-              <Link href="/acheter/tiktok" className="py-2 text-gray-700 hover:text-blue-600">
-                TikTok
-              </Link>
-              <Link href="/acheter/instagram" className="py-2 text-gray-700 hover:text-blue-600">
-                Instagram
-              </Link>
-              <Link href="/acheter/youtube" className="py-2 text-gray-700 hover:text-blue-600">
-                YouTube
-              </Link>
-              <Link href="/formulaire-dessai" className="py-2 text-gray-700 hover:text-blue-600">
-                Essai Gratuit
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   )
