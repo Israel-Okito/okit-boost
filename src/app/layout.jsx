@@ -4,7 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header/page";
 import Footer from "@/components/Footer/page";
 import { Toaster } from "@/components/ui/sonner";
-
+import { AuthProvider } from "@/lib/hooks/useAuth";
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,7 +25,6 @@ export const metadata = {
   keywords: "SMM, TikTok, Facebook, Instagram, YouTube, followers, likes, vues, Congo, RDC, Mobile Money",
 }
 
-
 export default function RootLayout({ children }) {
   return (
     <html lang="fr" suppressHydrationWarning>
@@ -33,11 +32,12 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased ${inter.className}`}
         suppressHydrationWarning={true}
       >
-        <Header/>
-         <main>{children} </main>
-         
-         <Toaster/>
-        <Footer/>
+        <AuthProvider>
+          <Header/>
+          <main>{children}</main>
+          <Toaster/>
+          <Footer/>
+        </AuthProvider>
       </body>
     </html>
   );

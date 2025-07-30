@@ -35,18 +35,24 @@ export default function TrialFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-
+  
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      toast.custom((t) => (
-        <div className="bg-green-600 text-white p-2 rounded-lg shadow-lg">
-          <strong className="text-lg">Demande envoyée</strong>
-          <div>Votre demande d'essai a été envoyée avec succès. Notre équipe vous contactera sous 24h.</div>
-        </div>
-      ));
-
+      const response = await fetch('/api/trial-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+  
+      const result = await response.json()
+  
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de la soumission')
+      }
+  
+      toast.success('Demande d\'essai envoyée avec succès!')
+  
       // Reset form
       setFormData({
         name: "",
@@ -58,12 +64,8 @@ export default function TrialFormPage() {
         notes: "",
       })
     } catch (error) {
-      toast.custom((t) => (
-        <div className="bg-red-600 text-white p-2 rounded-lg shadow-lg">
-          <strong className="text-lg">Erreur</strong>
-          <div>Une erreur est survenue lors de l'envoi.</div>
-        </div>
-      ));
+      console.error('Error submitting trial:', error)
+      toast.error(error.message || 'Erreur lors de l\'envoi')
     } finally {
       setIsSubmitting(false)
     }

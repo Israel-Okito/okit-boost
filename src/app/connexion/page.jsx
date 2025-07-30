@@ -12,7 +12,6 @@ export default function ConnexionPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  console.log(session)
 
   useEffect(() => {
     // Vérifie si un utilisateur est déjà connecté
@@ -28,8 +27,6 @@ export default function ConnexionPage() {
       if (session) router.push("/mon-compte")
     })
 
-    console.log(session)
-    console.log(subscription)
     return () => subscription.unsubscribe()
   }, [router, supabase.auth])
 
@@ -39,7 +36,7 @@ export default function ConnexionPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/mon-compte`,
         },
       })
       if (error) {
@@ -51,6 +48,8 @@ export default function ConnexionPage() {
       setIsLoading(false)
     }
   }
+
+
 
   // Si l'utilisateur est déjà connecté, afficher un message de chargement
   if (session) {

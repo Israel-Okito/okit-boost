@@ -1,44 +1,22 @@
+
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
-import { Menu, X, ShoppingCart, User, LogOut } from "lucide-react"
+import { Menu, X, ShoppingCart, User, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
-import { createClient } from "@/utils/supabase/client" // ton client Supabase
+import { useAuth } from "@/lib/hooks/useAuth"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [session, setSession] = useState(null)
+  const { user, profile, signOut, isAdmin, loading } = useAuth()
   const { items } = useCart()
-  const supabase = createClient()
 
-  // Récupérer la session à l'initialisation
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      setSession(data.session)
-      console.log("Session récupérée :", data.session)
-    }
-
-    fetchSession()
-
-    // Abonnement au changement d'état de session
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      console.log("Session changée :", session)
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = "/connexion"
+    await signOut()
+    window.location.href = "/"
   }
 
   return (
@@ -55,7 +33,12 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {/* ... tes liens ... */}
+            <Link href="/acheter/tiktok" className="text-gray-600 hover:text-gray-900">
+              Services
+            </Link>
+            <Link href="/formulaire-dessai" className="text-gray-600 hover:text-gray-900">
+              Essai gratuit
+            </Link>
           </nav>
 
           {/* Actions */}
@@ -72,11 +55,28 @@ export default function Header() {
               </Button>
             </Link>
 
-            {session ? (
-              <Button onClick={handleLogout} variant="outline" size="sm">
-                <LogOut className="w-4 h-4 mr-2" />
-                Déconnexion
-              </Button>
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            ) : user ? (
+              <div className="flex items-center space-x-2">
+                {isAdmin && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <Link href="/mon-compte">
+                  <Button variant="outline" size="sm">
+                    <User className="w-4 h-4 mr-2" />
+                    {profile?.full_name || user.email?.split('@')[0] || 'Mon compte'}
+                  </Button>
+                </Link>
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
             ) : (
               <Link href="/connexion">
                 <Button variant="outline" size="sm">
