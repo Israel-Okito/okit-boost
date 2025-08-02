@@ -74,6 +74,7 @@ export async function uploadPaymentProof(orderId, file) {
     
     const { data, error: uploadError } = await supabase.storage
       .from('payment-proofs')
+      
       .upload(fileName, file)
 
     if (uploadError) throw uploadError
