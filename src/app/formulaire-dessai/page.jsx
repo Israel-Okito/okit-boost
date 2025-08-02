@@ -20,7 +20,7 @@ export default function TrialFormPage() {
     phone: "",
     platform: "",
     service: "",
-    targetLink: "",
+    target_link: "",
     notes: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,7 +60,7 @@ export default function TrialFormPage() {
         phone: "",
         platform: "",
         service: "",
-        targetLink: "",
+        target_link: "",
         notes: "",
       })
     } catch (error) {
@@ -203,11 +203,11 @@ export default function TrialFormPage() {
             </div>
 
             <div>
-              <Label htmlFor="targetLink">Lien cible *</Label>
+              <Label htmlFor="target_link">Lien cible *</Label>
               <Input
-                id="targetLink"
-                name="targetLink"
-                value={formData.targetLink}
+                id="target_link"
+                name="target_link"
+                value={formData.target_link}
                 onChange={handleInputChange}
                 required
                 placeholder="Lien vers votre profil, vidéo ou post"

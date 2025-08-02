@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState } from "react"
@@ -13,14 +12,13 @@ export default function Header() {
   const { user, profile, signOut, isAdmin, loading } = useAuth()
   const { items } = useCart()
 
-
   const handleLogout = async () => {
     await signOut()
     window.location.href = "/"
   }
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="bg-white shadow-sm border-b sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -33,10 +31,16 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/acheter/tiktok" className="text-gray-600 hover:text-gray-900">
+            <Link 
+              href="/services" 
+              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
               Services
             </Link>
-            <Link href="/formulaire-dessai" className="text-gray-600 hover:text-gray-900">
+            <Link 
+              href="/formulaire-dessai" 
+              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+            >
               Essai gratuit
             </Link>
           </nav>
@@ -70,7 +74,10 @@ export default function Header() {
                 <Link href="/mon-compte">
                   <Button variant="outline" size="sm">
                     <User className="w-4 h-4 mr-2" />
-                    {profile?.full_name || user.email?.split('@')[0] || 'Mon compte'}
+                    <span className="hidden sm:inline">
+                      {profile?.full_name || user.email?.split('@')[0] || 'Mon compte'}
+                    </span>
+                    <span className="sm:hidden">Compte</span>
                   </Button>
                 </Link>
                 <Button onClick={handleLogout} variant="outline" size="sm">
@@ -81,17 +88,85 @@ export default function Header() {
               <Link href="/connexion">
                 <Button variant="outline" size="sm">
                   <User className="w-4 h-4 mr-2" />
-                  Connexion
+                  <span className="hidden sm:inline">Connexion</span>
+                  <span className="sm:hidden">Login</span>
                 </Button>
               </Link>
             )}
 
             {/* Mobile menu button */}
-            <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="md:hidden" 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
+              <Link
+                href="/services"
+                className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Services
+              </Link>
+              <Link
+                href="/formulaire-dessai"
+                className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Essai gratuit
+              </Link>
+              
+              {user && (
+                <>
+                  <Link
+                    href="/mon-compte"
+                    className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mon compte
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Administration
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleLogout()
+                      setIsMenuOpen(false)
+                    }}
+                    className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                  >
+                    Déconnexion
+                  </button>
+                </>
+              )}
+              
+              {!user && (
+                <Link
+                  href="/connexion"
+                  className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Connexion
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Skeleton } from "@/components/ui/skeleton"
 import { 
   Package, 
   Users, 
@@ -17,28 +18,79 @@ import {
   XCircle, 
   AlertCircle,
   Eye,
-  Edit,
-  Trash2
+  RefreshCw
 } from "lucide-react"
 import { toast } from "sonner"
+import { updateOrderStatus } from "@/lib/actions/admin"
+
+// Composants de Skeleton
+function StatsCardSkeleton() {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-4 w-4" />
+      </CardHeader>
+      <CardContent>
+        <Skeleton className="h-8 w-16 mb-2" />
+        <Skeleton className="h-3 w-24" />
+      </CardContent>
+    </Card>
+  )
+}
+
+function OrderCardSkeleton() {
+  return (
+    <div className="border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-6 w-16" />
+        </div>
+        <Skeleton className="h-4 w-20" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <Skeleton className="h-4 w-32 mb-1" />
+          <Skeleton className="h-4 w-24 mb-1" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <div>
+          <Skeleton className="h-4 w-20 mb-1" />
+          <Skeleton className="h-4 w-24 mb-1" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div className="text-right">
+          <Skeleton className="h-5 w-24 mb-1" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-24" />
+        <div className="flex space-x-2">
+          <Skeleton className="h-8 w-16" />
+          <Skeleton className="h-8 w-16" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function AdminPanel() {
   const [stats, setStats] = useState(null)
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [ordersLoading, setOrdersLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [updating, setUpdating] = useState(false)
+  const [updating, setUpdating] = useState(null) // ID de la commande en cours de mise à jour
 
   // Charger les statistiques
-  useEffect(() => {
-    fetchStats()
-    fetchOrders()
-  }, [statusFilter])
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/stats')
+      const response = await fetch('/api/admin/stats', {
+        cache: 'no-store'
+      })
       const data = await response.json()
       
       if (response.ok) {
@@ -46,23 +98,31 @@ export default function AdminPanel() {
       } else {
         if (response.status === 403) {
           window.location.href = '/'
+          return
         }
         throw new Error(data.error)
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
       toast.error('Erreur lors du chargement des statistiques')
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchOrders = async () => {
+  console.log(stats)
+
+  // Charger les commandes
+  const fetchOrders = useCallback(async () => {
     try {
-      setLoading(true)
+      setOrdersLoading(true)
       const url = statusFilter === 'all' 
         ? '/api/admin/orders' 
         : `/api/admin/orders?status=${statusFilter}`
       
-      const response = await fetch(url)
+      const response = await fetch(url, {
+        cache: 'no-store'
+      })
       const data = await response.json()
       
       if (response.ok) {
@@ -74,41 +134,35 @@ export default function AdminPanel() {
       console.error('Error fetching orders:', error)
       toast.error('Erreur lors du chargement des commandes')
     } finally {
-      setLoading(false)
+      setOrdersLoading(false)
     }
-  }
+  }, [statusFilter])
 
-  const updateOrderStatus = async (orderId, newStatus, adminNotes = '') => {
+  useEffect(() => {
+    fetchStats()
+  }, [fetchStats])
+
+  useEffect(() => {
+    fetchOrders()
+  }, [fetchOrders])
+
+  const handleUpdateOrderStatus = async (orderId, newStatus, adminNotes = '') => {
     try {
-      setUpdating(true)
+      setUpdating(orderId)
       
-      const response = await fetch('/api/admin/orders', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          orderId,
-          status: newStatus,
-          adminNotes
-        })
-      })
-
-      const data = await response.json()
+      // Utiliser server action au lieu d'un appel API
+      await updateOrderStatus(orderId, newStatus, adminNotes)
       
-      if (response.ok) {
-        toast.success('Statut mis à jour avec succès')
-        fetchOrders()
-        fetchStats()
-        setSelectedOrder(null)
-      } else {
-        throw new Error(data.error)
-      }
+      toast.success('Statut mis à jour avec succès')
+      
+      // Actualiser les données
+      await Promise.all([fetchOrders(), fetchStats()])
+      setSelectedOrder(null)
     } catch (error) {
       console.error('Error updating order:', error)
       toast.error('Erreur lors de la mise à jour')
     } finally {
-      setUpdating(false)
+      setUpdating(null)
     }
   }
 
@@ -126,19 +180,22 @@ export default function AdminPanel() {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed': return <CheckCircle className="w-4 h-4" />
-      case 'processing': return <Clock className="w-4 h-4" />
+      case 'processing': return <RefreshCw className="w-4 h-4" />
       case 'pending': return <AlertCircle className="w-4 h-4" />
       case 'cancelled': return <XCircle className="w-4 h-4" />
       default: return <Clock className="w-4 h-4" />
     }
   }
 
-  if (!stats) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    )
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'completed': return 'Terminé'
+      case 'processing': return 'En cours'
+      case 'pending': return 'En attente'
+      case 'cancelled': return 'Annulé'
+      case 'refunded': return 'Remboursé'
+      default: return 'Inconnu'
+    }
   }
 
   return (
@@ -151,59 +208,70 @@ export default function AdminPanel() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Commandes totales</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              +{stats.pendingOrders} en attente
-            </p>
-          </CardContent>
-        </Card>
+        {loading ? (
+          <>
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+            <StatsCardSkeleton />
+          </>
+        ) : stats ? (
+          <>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Commandes totales</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalOrders}</div>
+                <p className="text-xs text-muted-foreground">
+                  +{stats.pendingOrders} en attente
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Utilisateurs</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              Clients enregistrés
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Utilisateurs</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                <p className="text-xs text-muted-foreground">
+                  Clients enregistrés
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenus (CDF)</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {stats.totalRevenueCDF.toLocaleString()} CDF
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Commandes terminées
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Revenus (CDF)</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats.totalRevenueCDF.toLocaleString()} CDF
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Commandes terminées
+                </p>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Essais gratuits</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.trialRequests}</div>
-            <p className="text-xs text-muted-foreground">
-              Demandes en attente
-            </p>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Essais gratuits</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.trialRequests}</div>
+                <p className="text-xs text-muted-foreground">
+                  Demandes en attente
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        ) : null}
       </div>
 
       <Tabs defaultValue="orders" className="space-y-6">
@@ -232,7 +300,8 @@ export default function AdminPanel() {
                     <SelectItem value="cancelled">Annulées</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={fetchOrders} variant="outline">
+                <Button onClick={fetchOrders} variant="outline" disabled={ordersLoading}>
+                  {ordersLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
                   Actualiser
                 </Button>
               </div>
@@ -245,9 +314,11 @@ export default function AdminPanel() {
               <CardTitle>Commandes ({orders.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+              {ordersLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <OrderCardSkeleton key={i} />
+                  ))}
                 </div>
               ) : orders.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
@@ -263,7 +334,7 @@ export default function AdminPanel() {
                           <Badge className={getStatusColor(order.status)}>
                             <div className="flex items-center space-x-1">
                               {getStatusIcon(order.status)}
-                              <span className="capitalize">{order.status}</span>
+                              <span>{getStatusLabel(order.status)}</span>
                             </div>
                           </Badge>
                         </div>
@@ -275,7 +346,7 @@ export default function AdminPanel() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {order.profiles?.full_name || 'N/A'}
+                            {order.profiles?.full_name || order.customer_name || 'N/A'}
                           </div>
                           <div className="text-sm text-gray-600">
                             {order.profiles?.email || order.customer_email}
@@ -329,17 +400,23 @@ export default function AdminPanel() {
                             <>
                               <Button
                                 size="sm"
-                                onClick={() => updateOrderStatus(order.id, 'processing')}
-                                disabled={updating}
+                                onClick={() => handleUpdateOrderStatus(order.id, 'processing')}
+                                disabled={updating === order.id}
                               >
+                                {updating === order.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                ) : null}
                                 Accepter
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => updateOrderStatus(order.id, 'cancelled')}
-                                disabled={updating}
+                                onClick={() => handleUpdateOrderStatus(order.id, 'cancelled')}
+                                disabled={updating === order.id}
                               >
+                                {updating === order.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                ) : null}
                                 Refuser
                               </Button>
                             </>
@@ -347,9 +424,12 @@ export default function AdminPanel() {
                           {order.status === 'processing' && (
                             <Button
                               size="sm"
-                              onClick={() => updateOrderStatus(order.id, 'completed')}
-                              disabled={updating}
+                              onClick={() => handleUpdateOrderStatus(order.id, 'completed')}
+                              disabled={updating === order.id}
                             >
+                              {updating === order.id ? (
+                                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                              ) : null}
                               Marquer terminé
                             </Button>
                           )}
@@ -370,38 +450,56 @@ export default function AdminPanel() {
               <CardDescription>Les 5 dernières commandes</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {stats.recentOrders.map((order) => (
-                  <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <div className="font-medium">{order.order_number}</div>
-                      <div className="text-sm text-gray-600">
-                        {order.profiles?.full_name || 'Client anonyme'} - {order.profiles?.email}
+              {loading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <Skeleton className="h-4 w-20 mb-2" />
+                        <Skeleton className="h-3 w-32 mb-1" />
+                        <Skeleton className="h-3 w-24" />
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(order.created_at).toLocaleString('fr-FR')}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                      <div className="text-sm font-medium mt-1">
-                        {order.currency === 'CDF' 
-                          ? `${order.total_cdf.toLocaleString()} CDF`
-                          : `${order.total_usd.toFixed(2)} USD`
-                        }
+                      <div className="text-right">
+                        <Skeleton className="h-5 w-16 mb-1" />
+                        <Skeleton className="h-4 w-20" />
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : stats?.recentOrders ? (
+                <div className="space-y-4">
+                  {stats.recentOrders.map((order) => (
+                    <div key={order.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{order.order_number}</div>
+                        <div className="text-sm text-gray-600">
+                          {order.profiles?.full_name || 'Client anonyme'} - {order.profiles?.email}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(order.created_at).toLocaleString('fr-FR')}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge className={getStatusColor(order.status)}>
+                          {getStatusLabel(order.status)}
+                        </Badge>
+                        <div className="text-sm font-medium mt-1">
+                          {order.currency === 'CDF' 
+                            ? `${order.total_cdf.toLocaleString()} CDF`
+                            : `${order.total_usd.toFixed(2)} USD`
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
 
-      {/* Modal détails commande */}
+      {/* Modal détails commande - Reste identique */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -427,7 +525,7 @@ export default function AdminPanel() {
                     <div>
                       <span className="font-medium">Statut: </span>
                       <Badge className={getStatusColor(selectedOrder.status)}>
-                        {selectedOrder.status}
+                        {getStatusLabel(selectedOrder.status)}
                       </Badge>
                     </div>
                     <div>
@@ -533,7 +631,7 @@ export default function AdminPanel() {
                         value={selectedOrder.status}
                         onValueChange={(newStatus) => {
                           if (newStatus !== selectedOrder.status) {
-                            updateOrderStatus(selectedOrder.id, newStatus)
+                            handleUpdateOrderStatus(selectedOrder.id, newStatus)
                           }
                         }}
                       >
@@ -560,7 +658,7 @@ export default function AdminPanel() {
                         rows={3}
                         onBlur={(e) => {
                           if (e.target.value !== selectedOrder.admin_notes) {
-                            updateOrderStatus(
+                            handleUpdateOrderStatus(
                               selectedOrder.id, 
                               selectedOrder.status, 
                               e.target.value

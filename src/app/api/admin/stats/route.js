@@ -37,6 +37,7 @@ export async function GET() {
       supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
       supabase.from('trial_requests').select('*', { count: 'exact', head: true }).eq('status', 'pending')
     ])
+    console.log(trialRequests)
 
     // Revenus
     const { data: revenueData } = await supabase

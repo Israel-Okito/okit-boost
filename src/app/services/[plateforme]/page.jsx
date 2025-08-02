@@ -1,4 +1,3 @@
-//acheter/[plateforme]/page.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -13,6 +12,7 @@ import { ShoppingCart, AlertCircle, Loader2 } from "lucide-react"
 import { useCart } from "@/hooks/useCart"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/hooks/useAuth"
+import Image from "next/image"
 
 export default function PlatformPage() {
   const params = useParams()
@@ -153,17 +153,18 @@ export default function PlatformPage() {
                   : '#3B82F6'
               }}
             >
-              {platform.icon_url ? (
-                <img 
-                  src={platform.icon_url} 
-                  alt={platform.name}
-                  className="w-10 h-10 object-contain filter brightness-0 invert"
-                />
-              ) : (
-                <span className="text-white font-bold">
-                  {platform.name.charAt(0).toUpperCase()}
-                </span>
-              )}
+                      {platform.icon_url.toLowerCase() === "facebook" && (
+                            <Image src="/facebook.webp" alt={platform.name} width={32} height={32} className="object-contain filter " />
+                          )}
+                          {platform.icon_url.toLowerCase() === "instagram" && (
+                            <Image src="/instagram.webp" alt={platform.name} width={32} height={32} className="object-contain filter " />
+                          )}
+                          {platform.icon_url.toLowerCase() === "tiktok" && (
+                            <Image src="/tiktok.webp" alt={platform.name} width={32} height={32} className="object-contain filter " />
+                          )}
+                          {platform.icon_url.toLowerCase() === "youtube" && (
+                            <Image src="/youtube.webp" alt={platform.name} width={32} height={32} className="object-contain filter " />
+                          )}
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Services {platform.name}

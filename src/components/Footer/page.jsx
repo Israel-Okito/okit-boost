@@ -18,7 +18,7 @@ export default function Footer() {
               prix abordables, support 24/7.
             </p>
             <div className="flex space-x-4">
-              <a href="https://wa.me/243000000000" className="text-gray-400 hover:text-white transition-colors">
+              <a href="https://wa.me/243900554141" className="text-gray-400 hover:text-white transition-colors">
                 WhatsApp
               </a>
               <a href="mailto:contact@okit-boost.com" className="text-gray-400 hover:text-white transition-colors">
@@ -32,18 +32,23 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/acheter/tiktok" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services/tiktok" className="text-gray-400 hover:text-white transition-colors">
                   TikTok
                 </Link>
               </li>
               <li>
-                <Link href="/acheter/instagram" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services/instagram" className="text-gray-400 hover:text-white transition-colors">
                   Instagram
                 </Link>
               </li>
               <li>
-                <Link href="/acheter/youtube" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services/youtube" className="text-gray-400 hover:text-white transition-colors">
                   YouTube
+                </Link>
+              </li>
+              <li>
+                <Link href="/services/facebook" className="text-gray-400 hover:text-white transition-colors">
+                  Facebook
                 </Link>
               </li>
               <li>
@@ -83,7 +88,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Okit-Boost. Tous droits réservés.</p>
+          <p>  &copy; {new Date().getFullYear()} Okit-Boost. Tous droits réservés.</p>
         </div>
       </div>
     </footer>
