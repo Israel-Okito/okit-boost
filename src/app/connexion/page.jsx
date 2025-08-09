@@ -75,7 +75,7 @@ export default function ConnexionPage() {
           </div>
           <CardTitle className="text-3xl font-bold text-gray-900 mb-2">Bienvenue sur Okit-Boost</CardTitle>
           <CardDescription className="text-lg text-gray-600">
-            Connectez-vous pour accéder à vos services SMM
+            Connectez-vous pour accéder à vos services de boostage
           </CardDescription>
         </CardHeader>
 
@@ -148,7 +148,7 @@ export default function ConnexionPage() {
           <div className="pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
               En vous connectant, vous acceptez nos{" "}
-              <a href="/conditions" className="text-blue-600 hover:text-blue-500">
+              <a href="/conditions-utilisation" className="text-blue-600 hover:text-blue-500">
                 conditions d'utilisation
               </a>{" "}
               et notre{" "}

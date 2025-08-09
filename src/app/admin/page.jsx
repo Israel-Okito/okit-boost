@@ -110,7 +110,6 @@ export default function AdminPanel() {
     }
   }, [])
 
-  console.log(stats)
 
   // Charger les commandes
   const fetchOrders = useCallback(async () => {
@@ -278,6 +277,7 @@ export default function AdminPanel() {
         <TabsList>
           <TabsTrigger value="orders">Commandes</TabsTrigger>
           <TabsTrigger value="recent">Activité récente</TabsTrigger>
+          <TabsTrigger value="demande" className="bg-purple-600 ">Demande d'essaie</TabsTrigger>
         </TabsList>
 
         <TabsContent value="orders" className="space-y-6">
@@ -442,7 +442,8 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </TabsContent>
-
+        
+        {/* activité recent */}
         <TabsContent value="recent">
           <Card>
             <CardHeader>
@@ -497,6 +498,11 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="demande">
+
+        </TabsContent>
+
       </Tabs>
 
       {/* Modal détails commande - Reste identique */}

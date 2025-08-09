@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Search, ArrowRight, TrendingUp, Users, Eye, Heart, Star, Clock, Shield } from "lucide-react"
 import Image from "next/image"
 
-// Composant Skeleton pour les cartes de plateforme
+
 function PlatformCardSkeleton() {
   return (
     <Card className="group hover:shadow-lg transition-all duration-300">
@@ -109,7 +109,7 @@ export default function ServicesPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Nos Services SMM
+            Nos Services de Boosting
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Boostez votre présence sur les réseaux sociaux avec nos services de qualité. 

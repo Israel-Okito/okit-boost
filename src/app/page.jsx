@@ -8,23 +8,23 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-800 text-white">
+      <section className="bg-gradient-to-br from-purple-950 via-purple-900 to-yellow-400 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               Boostez votre présence sur les
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-300 bg-clip-text text-transparent">
                 {" "}
                 réseaux sociaux
               </span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-blue-100 max-w-3xl mx-auto">
-              Services SMM de qualité pour TikTok, Instagram et YouTube. Paiement sécurisé via Mobile Money. Support
+              Services de boostage de qualité pour TikTok, Instagram, Facebook et YouTube. Paiement sécurisé via Mobile Money. Support
               24/7.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/services">
-                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 cursor-pointer">
                   <Zap className="w-5 h-5 mr-2" />
                   Commander maintenant
                 </Button>
@@ -33,7 +33,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-blue-600 bg-transparent"
+                  className="border-white text-white hover:bg-white hover:text-blue-600 bg-transparent cursor-pointer"
                 >
                   <Star className="w-5 h-5 mr-2" />
                   Essai gratuit
@@ -115,11 +115,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold text-yellow-400 mb-2">10K+</div>
+              <div className="text-4xl font-bold text-yellow-400 mb-2">1K+</div>
               <div className="text-gray-400">Clients satisfaits</div>
             </div>
             <div>
-              <div className="text-4xl font-bold text-yellow-400 mb-2">500K+</div>
+              <div className="text-4xl font-bold text-yellow-400 mb-2">50K+</div>
               <div className="text-gray-400">Commandes traitées</div>
             </div>
             <div>
@@ -153,7 +153,7 @@ export default function HomePage() {
                   "Service excellent ! Mes vues TikTok ont explosé en quelques heures. Je recommande vivement
                   Okit-Boost."
                 </p>
-                <div className="font-semibold">Marie K.</div>
+                <div className="font-semibold">Maria</div>
                 <div className="text-sm text-gray-500">Influenceuse TikTok</div>
               </CardContent>
             </Card>
@@ -169,7 +169,7 @@ export default function HomePage() {
                   "Paiement facile via Orange Money. Le support client est très réactif. Parfait pour booster mon
                   Instagram."
                 </p>
-                <div className="font-semibold">Jean-Claude M.</div>
+                <div className="font-semibold">Jean k.</div>
                 <div className="text-sm text-gray-500">Content Creator</div>
               </CardContent>
             </Card>
@@ -184,7 +184,7 @@ export default function HomePage() {
                 <p className="text-gray-600 mb-4">
                   "Ma chaîne YouTube a enfin décollé grâce à Okit-Boost. Prix abordables et résultats garantis."
                 </p>
-                <div className="font-semibold">Sarah L.</div>
+                <div className="font-semibold">Sarah</div>
                 <div className="text-sm text-gray-500">YouTubeuse</div>
               </CardContent>
             </Card>
@@ -193,7 +193,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-20 bg-gradient-to-r from-purple-950 via-purple-900 to-yellow-500 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Prêt à booster votre présence ?</h2>
           <p className="text-xl mb-8 text-blue-100">

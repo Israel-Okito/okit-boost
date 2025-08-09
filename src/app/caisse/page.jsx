@@ -259,14 +259,14 @@ export default function CheckoutPage() {
 
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={item.service_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={item.service_id} className="flex items-center justify-between p-4 bg-gray-100 rounded-lg">
                     <div className="flex-1">
                       <h3 className="font-semibold">{item.service_name}</h3>
                       <p className="text-sm text-gray-600 capitalize">
                         {item.platform}
                       </p>
                       <p className="text-sm text-gray-600">Quantité: {item.quantity.toLocaleString()}</p>
-                      <p className="text-xs text-gray-500 truncate">{item.target_link}</p>
+                      <p className="text-xs text-gray-500 truncate text-wrap">{item.target_link}</p>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold">
@@ -278,7 +278,7 @@ export default function CheckoutPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => removeItem(item.service_id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-white hover:text-white/80 bg-red-600"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -381,6 +381,7 @@ export default function CheckoutPage() {
                       <SelectItem value="orange">Orange Money</SelectItem>
                       <SelectItem value="airtel">Airtel Money</SelectItem>
                       <SelectItem value="mpesa">M-Pesa</SelectItem>
+                      <SelectItem value="afrimoney">AFRIMONEY</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.paymentMethod && (
@@ -406,7 +407,7 @@ export default function CheckoutPage() {
                                 ? getTotalCDF().toLocaleString() + " CDF"
                                 : "$" + getTotalUSD().toFixed(2)}
                             </span>{" "}
-                            vers: <strong className="text-orange-600">+243 XXX XXX XXX</strong>
+                            vers: <strong className="text-orange-600">+243 854262383</strong>
                           </p>
                           <p><strong>4.</strong> Téléchargez la preuve de paiement ci-dessous</p>
                         </div>
@@ -439,6 +440,22 @@ export default function CheckoutPage() {
                             vers: <strong className="text-green-600">+243 XXX XXX XXX</strong>
                           </p>
                           <p><strong>4.</strong> Téléchargez la preuve de paiement ci-dessous</p>
+                        </div>
+                      )}
+                      {formData.paymentMethod === "afrimoney" && (
+                        <div>
+                          <p><strong>1.</strong>Composez *1020# sur votre téléphone</p>
+                          <p><strong>2.</strong> Choisissez "1.USD ou 2.CDF"</p>
+                          <p><strong>3.</strong> Choisissez "Envoi Argent"</p>
+                          <p><strong>4.</strong> Envoyez{" "}
+                            <span className="font-bold">
+                              {currency === "CDF"
+                                ? getTotalCDF().toLocaleString() + " CDF"
+                                : "$" + getTotalUSD().toFixed(2)}
+                            </span>{" "}
+                            vers: <strong className="text-green-600">+243 900554141</strong>
+                          </p>
+                          <p><strong>5.</strong> Téléchargez la preuve de paiement ci-dessous</p>
                         </div>
                       )}
                     </div>

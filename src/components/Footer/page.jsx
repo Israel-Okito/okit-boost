@@ -1,3 +1,4 @@
+import Image from "next/image"
 import Link from "next/link"
 
 export default function Footer() {
@@ -8,10 +9,7 @@ export default function Footer() {
           {/* Logo & Description */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">OB</span>
-              </div>
-              <span className="text-xl font-bold">Okit-Boost</span>
+               <Image src={"/logo.webp"} alt="okit boost" width={80} height={80}/>
             </div>
             <p className="text-gray-400 mb-4">
               Votre partenaire de confiance pour booster votre présence sur les réseaux sociaux. Services de qualité,
@@ -79,8 +77,8 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/conditions" className="text-gray-400 hover:text-white transition-colors">
-                  Conditions
+                <Link href="/conditions-utilisation" className="text-gray-400 hover:text-white transition-colors">
+                  Conditions d'utilisation
                 </Link>
               </li>
             </ul>

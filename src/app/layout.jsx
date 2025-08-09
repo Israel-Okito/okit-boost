@@ -19,10 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Okit-Boost - Services SMM pour TikTok, Instagram & YouTube",
+  title: "Okit-Boost - Services de boostage pour TikTok, Instagram, Facebook & YouTube",
   description:
-    "Boostez votre présence sur les réseaux sociaux avec Okit-Boost. Services SMM de qualité, paiement Mobile Money, support 24/7.",
-  keywords: "SMM, TikTok, Facebook, Instagram, YouTube, followers, likes, vues, Congo, RDC, Mobile Money",
+    "Boostez votre présence sur les réseaux sociaux avec Okit-Boost. Obtenez de vrais abonnés, des likes et bien plus encore sur TikTok, Instagram, Facebook, YouTube et d'autres réseaux sociaux, paiement Mobile Money, support 24/7.",
+  keywords: "SMM, boostage, boosting, TikTok, Facebook, Instagram, YouTube, followers, likes, vues, abonnés, Congo, RDC, Mobile Money",
 }
 
 export default function RootLayout({ children }) {

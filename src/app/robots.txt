@@ -1,0 +1,62 @@
+# Robots.txt pour Okit-Boost
+# Permet l'indexation des pages publiques et protège l'admin
+
+User-agent: *
+
+# Pages autorisées pour l'indexation
+Allow: /
+Allow: /services
+Allow: /services/*
+Allow: /connexion
+Allow: /inscription
+Allow: /formulaire-dessai
+Allow: /faq
+Allow: /conditions-utilisation
+Allow: /contact
+
+# Pages interdites pour les bots (sécurité)
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /mon-compte
+Disallow: /caisse
+Disallow: /_next/
+Disallow: /static/
+
+# Fichiers et dossiers sensibles
+Disallow: /.env
+Disallow: /config/
+Disallow: /database/
+Disallow: /logs/
+Disallow: /backups/
+
+# Éviter l'indexation des pages de paiement
+Disallow: /payment/
+Disallow: /checkout/
+Disallow: /order/
+Disallow: /caisse/
+
+# Éviter les paramètres d'URL sensibles
+Disallow: /*?token=
+Disallow: /*?session=
+Disallow: /*?key=
+Disallow: /*?admin=
+
+# Bots spécifiques pour l'admin (sécurité renforcée)
+User-agent: Googlebot
+Disallow: /admin
+
+User-agent: Bingbot
+Disallow: /admin
+
+User-agent: Slurp
+Disallow: /admin
+
+User-agent: DuckDuckBot
+Disallow: /admin
+
+# Sitemap
+Sitemap: https://okit-boost.com/sitemap.xml
+
+# Crawl-delay pour éviter la surcharge
+Crawl-delay: 1

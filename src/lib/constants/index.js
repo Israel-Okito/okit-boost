@@ -9,7 +9,8 @@ export const ORDER_STATUSES = {
   export const PAYMENT_METHODS = {
     ORANGE: 'orange',
     AIRTEL: 'airtel',
-    MPESA: 'mpesa'
+    MPESA: 'mpesa',
+    AFRIMONEY: 'afrimoney'
   }
   
   export const TRIAL_STATUSES = {

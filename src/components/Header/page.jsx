@@ -6,6 +6,7 @@ import { Menu, X, ShoppingCart, User, LogOut, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/hooks/useCart"
 import { useAuth } from "@/lib/hooks/useAuth"
+import Image from "next/image"
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -18,37 +19,34 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+    <header className="bg-gradient-to-r bg-[#210238] via-purple-950 to-yellow-500  shadow-sm sticky top-0 z-40 ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">OB</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">Okit-Boost</span>
+          <Link href="/" className="flex items-center space-x-2  ">
+           <Image src={"/logo.webp"} alt="okit boost" width={80} height={80}/>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center text-white hover:text-white/90  space-x-8">
             <Link 
               href="/services" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              className="font-medium transition-colors"
             >
               Services
             </Link>
             <Link 
               href="/formulaire-dessai" 
-              className="text-gray-600 hover:text-gray-900 font-medium transition-colors"
+              className="font-medium transition-colors"
             >
               Essai gratuit
             </Link>
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4">
-            <Link href="/caisse" className="relative">
-              <Button variant="outline" size="sm">
+          <div className="flex items-center space-x-4 ">
+            <Link href="/caisse" className="relative ">
+              <Button variant="outline" size="sm" className="cursor-pointer">
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Panier
                 {items.length > 0 && (
@@ -65,7 +63,7 @@ export default function Header() {
               <div className="flex items-center space-x-2">
                 {isAdmin && (
                   <Link href="/admin">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="cursor-pointer">
                       <Settings className="w-4 h-4 mr-2" />
                       Admin
                     </Button>
@@ -74,22 +72,22 @@ export default function Header() {
                 <Link href="/mon-compte">
                   <Button variant="outline" size="sm">
                     <User className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">
+                    <span className="hidden sm:inline cursor-pointer">
                       {profile?.full_name || user.email?.split('@')[0] || 'Mon compte'}
                     </span>
                     <span className="sm:hidden">Compte</span>
                   </Button>
                 </Link>
-                <Button onClick={handleLogout} variant="outline" size="sm">
-                  <LogOut className="w-4 h-4" />
+                <Button onClick={handleLogout} variant="outline" size="sm" className="cursor-pointer">
+                  <LogOut className="w-4 h-4 " />
                 </Button>
               </div>
             ) : (
               <Link href="/connexion">
                 <Button variant="outline" size="sm">
                   <User className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Connexion</span>
-                  <span className="sm:hidden">Login</span>
+                  <span className="hidden sm:inline cursor-pointer">Connexion</span>
+                  <span className="sm:hidden cursor-pointer">Login</span>
                 </Button>
               </Link>
             )}
