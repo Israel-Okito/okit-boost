@@ -125,6 +125,32 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 
 export async function middleware(request) {
+
+
+   // Créer le client Supabase pour vérifier l'authentification
+   const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
+          })
+          response = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
+    }
+  )
+
   // Mettre à jour la session Supabase
   let response = await updateSession(request)
 
@@ -166,30 +192,7 @@ export async function middleware(request) {
     return response
   }
 
-  // Créer le client Supabase pour vérifier l'authentification
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value)
-          })
-          response = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options)
-          })
-        },
-      },
-    }
-  )
-
+ 
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
 
@@ -214,14 +217,34 @@ export async function middleware(request) {
     }
 
     // Protection des routes utilisateur authentifié
-    const protectedRoutes = ['/mon-compte', '/caisse']
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    // const protectedRoutes = ['/mon-compte', '/caisse']
+    // const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
-    if (isProtectedRoute && !user) {
+    // if (isProtectedRoute && !user) {
+    //   const redirectUrl = new URL('/connexion', request.url)
+    //   redirectUrl.searchParams.set('redirect', pathname)
+    //   return NextResponse.redirect(redirectUrl)
+    // }
+
+    const pathnamecompte = request.nextUrl.pathname
+    const isProtectedRoutecompte = pathnamecompte.startsWith('/mon-compte')
+  
+    if (isProtectedRoutecompte && !user) {
       const redirectUrl = new URL('/connexion', request.url)
-      redirectUrl.searchParams.set('redirect', pathname)
+      redirectUrl.searchParams.set('redirect', pathnamecaisse)
       return NextResponse.redirect(redirectUrl)
     }
+
+    const pathnamecaisse = request.nextUrl.pathname
+    const isProtectedRoutecaisse = pathnamecaisse.startsWith('/caisse')
+  
+    if (isProtectedRoutecaisse && !user) {
+      const redirectUrl = new URL('/connexion', request.url)
+      redirectUrl.searchParams.set('redirect', pathnamecaisse)
+      return NextResponse.redirect(redirectUrl)
+    }
+
+
 
     // Protection des API routes admin
     if (pathname.startsWith('/api/admin')) {

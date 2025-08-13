@@ -21,7 +21,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import { toast } from "sonner"
-import { updateOrderStatus } from "@/lib/actions/admin"
+import { updateOrderStatus, updateTrialRequestStatus } from "@/lib/actions/admin"
 
 // Composants de Skeleton
 function StatsCardSkeleton() {
@@ -79,11 +79,15 @@ function OrderCardSkeleton() {
 export default function AdminPanel() {
   const [stats, setStats] = useState(null)
   const [orders, setOrders] = useState([])
+  const [trials, setTrials] = useState([])
   const [loading, setLoading] = useState(true)
   const [ordersLoading, setOrdersLoading] = useState(true)
+  const [trialsLoading, setTrialsLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [selectedTrial, setSelectedTrial] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [updating, setUpdating] = useState(null) // ID de la commande en cours de mise à jour
+  const [updatingtrial, setUpdatingtrial] = useState(null) // ID de la commande en cours de mise à jour
 
   // Charger les statistiques
   const fetchStats = useCallback(async () => {
@@ -137,6 +141,38 @@ export default function AdminPanel() {
     }
   }, [statusFilter])
 
+
+  // Charger les demandes d'essaie
+  const fetchTrials = useCallback(async () => {
+    try {
+      setTrialsLoading(true)
+
+      const url = statusFilter === 'all' 
+      ? '/api/admin/trial-requets' 
+      : `/api/admin/trial-requets?status=${statusFilter}`
+    
+      
+      const response = await fetch(url, {
+        cache: 'no-store'
+      })
+      const data = await response.json()
+      
+      if (response.ok) {
+        setTrials(data.trials)
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      console.error("Error fetching demandes d'essaie :", error)
+      toast.error("Erreur lors du chargement des demandes d'essaie ")
+    } finally {
+      setTrialsLoading(false)
+    }
+  }, [statusFilter])
+
+
+
+
   useEffect(() => {
     fetchStats()
   }, [fetchStats])
@@ -144,6 +180,13 @@ export default function AdminPanel() {
   useEffect(() => {
     fetchOrders()
   }, [fetchOrders])
+
+  useEffect(() => {
+    fetchTrials()
+  }, [fetchTrials])
+
+
+
 
   const handleUpdateOrderStatus = async (orderId, newStatus, adminNotes = '') => {
     try {
@@ -162,6 +205,26 @@ export default function AdminPanel() {
       toast.error('Erreur lors de la mise à jour')
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const handleUpdateTrialStatus = async (requestId, newStatus, adminNotes = '') => {
+    try {
+      setUpdatingtrial(requestId)
+      
+      // Utiliser server action au lieu d'un appel API
+      await updateTrialRequestStatus(requestId, newStatus, adminNotes)
+      
+      toast.success('Statut mis à jour avec succès')
+      
+      // Actualiser les données
+      await Promise.all([fetchTrials()])
+      setSelectedTrial(null)
+    } catch (error) {
+      console.error('Error updating trials:', error)
+      toast.error('Erreur lors de la mise à jour')
+    } finally {
+      setUpdatingtrial(null)
     }
   }
 
@@ -185,6 +248,7 @@ export default function AdminPanel() {
       default: return <Clock className="w-4 h-4" />
     }
   }
+  
 
   const getStatusLabel = (status) => {
     switch (status) {
@@ -197,6 +261,35 @@ export default function AdminPanel() {
     }
   }
 
+  const getStatusIconTrial = (status) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="w-4 h-4" />
+      case 'processing': return <RefreshCw className="w-4 h-4" />
+      case 'pending': return <AlertCircle className="w-4 h-4" />
+      case 'rejected': return <XCircle className="w-4 h-4" />
+      default: return <Clock className="w-4 h-4" />
+    }
+  }
+
+  const getStatusLabelTrial = (status) => {
+    switch (status) {
+      case 'completed': return 'Terminé'
+      case 'approved': return 'En cours'
+      case 'pending': return 'En attente'
+      case 'rejected': return 'Annulé'
+      default: return 'Inconnu'
+    }
+  }
+
+  const getStatusColorTrial = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800'
+      case 'processing': return 'bg-blue-100 text-blue-800'
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'rejected': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -280,6 +373,7 @@ export default function AdminPanel() {
           <TabsTrigger value="demande" className="bg-purple-600 ">Demande d'essaie</TabsTrigger>
         </TabsList>
 
+         {/* Commandes */}
         <TabsContent value="orders" className="space-y-6">
           {/* Filtres */}
           <Card>
@@ -499,8 +593,150 @@ export default function AdminPanel() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="demande">
+        {/* demandes d'essaie */}
+        <TabsContent value="demande" className="space-y-6">
+          {/* Filtres */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Filtrer les demandes d'essaie</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les demandes</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="processing">En cours</SelectItem>
+                    <SelectItem value="completed">Terminées</SelectItem>
+                    <SelectItem value="cancelled">Annulées</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button onClick={fetchTrials} variant="outline" disabled={trialsLoading}>
+                  {trialsLoading ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Actualiser
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
+          {/* Liste des demandes */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Demandes ({trials.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {trialsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <OrderCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : trials.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Aucune demande trouvée
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {trials.map((trial) => (
+                    <div key={trial.id} className="border rounded-lg p-4 bg-blue-100 hover:bg-gray-50">
+                          <span className="font-medium ">{trial.id}</span>
+                      <div className="flex items-center justify-between my-3">
+                        <div className="flex items-center space-x-3">
+                          <Badge className={getStatusColorTrial(trial.status)}>
+                            <div className="flex items-center space-x-1">
+                              {getStatusIconTrial(trial.status)}
+                              <span>{getStatusLabelTrial(trial.status)}</span>
+                            </div>
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(trial.created_at).toLocaleDateString('fr-FR')}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-gray-900" >
+                        <div className="flex flex-col items-start">
+                          <div className="text-sm font-medium ">
+                            {trial.name || 'N/A'}
+                          </div>
+                          <div className="text-sm">
+                            {trial.email || 'N/A'}
+                          </div>
+                          <div className="text-sm ">
+                            {trial.phone || 'N/A'}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="text-sm text-gray-600">
+                          Plateforme :  {trial.platform || 'N/A'} 
+                          </div>
+                          <div className="text-sm text-gray-600">
+                          Service :  {trial.service|| 'N/A'} 
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Lien : {trial.target_link || 'N/A'} 
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Notes: {trial.notes || 'N/A'}
+                          </div>
+                         
+                        </div>
+
+                    
+                      </div>
+
+                      <div className="flex items-center justify-between">
+
+                        <div className="flex space-x-2">
+                          {trial.status === 'pending' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => handleUpdateTrialStatus(trial.id, 'approved')}
+                                disabled={updatingtrial === trial.id}
+                              >
+                                {updatingtrial === trial.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                ) : null}
+                                Accepter
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleUpdateTrialStatus(trial.id, 'rejected')}
+                                disabled={updatingtrial === trial.id}
+                              >
+                                {updatingtrial === trial.id ? (
+                                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                                ) : null}
+                                Refuser
+                              </Button>
+                            </>
+                          )}
+                          {trial.status === 'approved' && (
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateTrialStatus(trial.id, 'completed')}
+                              disabled={updatingtrial === trial.id}
+                            >
+                              {updatingtrial === trial.id ? (
+                                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                              ) : null}
+                              Marquer terminé
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
       </Tabs>
@@ -681,6 +917,162 @@ export default function AdminPanel() {
                         </label>
                         <div className="p-3 bg-gray-50 rounded-md text-sm">
                           {selectedOrder.notes}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+       {/* Modal détails demandes - Reste identique */}
+       {selectedTrial && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold">Détails de la demande</h2>
+                <Button variant="outline" onClick={() => setSelectedTrial(null)}>
+                  Fermer
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Informations commande */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Informations générales</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <span className="font-medium">id commande: </span>
+                      {selectedTrial.id}
+                    </div>
+                    <div>
+                      <span className="font-medium">Statut: </span>
+                      <Badge className={getStatusColor(selectedTrial.status)}>
+                        {getStatusLabel(selectedTrial.status)}
+                      </Badge>
+                    </div>
+             
+                    <div>
+                      <span className="font-medium">Date: </span>
+                      {new Date(selectedTrial.created_at).toLocaleString('fr-FR')}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Informations client */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Client</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div>
+                      <span className="font-medium">Nom: </span>
+                      {selectedTrial.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">Email: </span>
+                      {selectedTrial.email}
+                    </div>
+                    <div>
+                      <span className="font-medium">Téléphone: </span>
+                      {selectedTrial.phone}
+                    </div>
+                  
+             
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Services commandés */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Services Demandés</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                          Service :<h4 className="font-medium">{selectedTrial.service}</h4>
+                            <p className="text-sm text-gray-600 capitalize">
+                           Plateforme : {selectedTrial.platform}
+                            </p>
+                          </div>
+                     
+                        <div className="text-sm text-gray-600 truncate">
+                          Lien: {selectedTrial.target_link}
+                        </div>
+                      </div>
+                 
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Actions admin */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Actions administrateur</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Changer le statut
+                      </label>
+                      <Select
+                        value={selectedTrial.status}
+                        onValueChange={(newStatus) => {
+                          if (newStatus !== selectedTrial.status) {
+                            handleUpdateTrialStatus(selectedTrial.id, newStatus)
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-48">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">En attente</SelectItem>
+                          <SelectItem value="processing">En cours</SelectItem>
+                          <SelectItem value="completed">Terminé</SelectItem>
+                          <SelectItem value="cancelled">Annulé</SelectItem>
+                          <SelectItem value="refunded">Remboursé</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">
+                        Notes administrateur
+                      </label>
+                      <Textarea
+                        placeholder="Ajouter des notes internes..."
+                        defaultValue={selectedOrder.admin_notes || ''}
+                        rows={3}
+                        onBlur={(e) => {
+                          if (e.target.value !== selectedTrial.admin_notes) {
+                            handleUpdateTrialStatus(
+                              selectedTrial.id, 
+                              selectedTrial.status, 
+                              e.target.value
+                            )
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {selectedTrial.notes && (
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          Notes du client
+                        </label>
+                        <div className="p-3 bg-gray-50 rounded-md text-sm">
+                          {selectedTrial.notes}
                         </div>
                       </div>
                     )}

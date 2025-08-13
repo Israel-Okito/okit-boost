@@ -68,6 +68,7 @@ export async function GET(request) {
   }
 }
 
+
 export async function PATCH(request) {
   try {
     const supabase = await createClient()

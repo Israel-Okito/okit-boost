@@ -161,7 +161,7 @@ export default function TrialFormPage() {
                   <SelectContent>
                     <SelectItem value="tiktok">TikTok</SelectItem>
                     <SelectItem value="instagram">Instagram</SelectItem>
-                    <SelectItem value="youtube">YouTube</SelectItem>
+                    {/* <SelectItem value="youtube">YouTube</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -178,25 +178,25 @@ export default function TrialFormPage() {
                   <SelectContent>
                     {formData.platform === "tiktok" && (
                       <>
-                        <SelectItem value="tiktok-views">Vues TikTok</SelectItem>
-                        <SelectItem value="tiktok-followers">Followers TikTok</SelectItem>
-                        <SelectItem value="tiktok-likes">Likes TikTok</SelectItem>
+                        <SelectItem value="tiktok-views">Vues TikTok <span className="text-blue-500"> (seulement 20 vues)</span></SelectItem>
+                        <SelectItem value="tiktok-followers">Followers TikTok <span className="text-blue-500"> (seulement 20 followers)</span></SelectItem>
+                        <SelectItem value="tiktok-likes">Likes TikTok <span className="text-blue-500">(seulement 20 likes)</span></SelectItem>
                       </>
                     )}
                     {formData.platform === "instagram" && (
                       <>
-                        <SelectItem value="instagram-followers">Followers Instagram</SelectItem>
-                        <SelectItem value="instagram-likes">Likes Instagram</SelectItem>
-                        <SelectItem value="instagram-views">Vues Instagram</SelectItem>
+                        <SelectItem value="instagram-followers">Followers Instagram <span className="text-blue-500">(seulement 20 Followers)</span></SelectItem>
+                        <SelectItem value="instagram-likes">Likes Instagram <span className="text-blue-500">(seulement 20 likes)</span></SelectItem>
+                        <SelectItem value="instagram-views">Vues Instagram <span className="text-blue-500">(seulement 20 vues)</span></SelectItem>
                       </>
                     )}
-                    {formData.platform === "youtube" && (
+                    {/* {formData.platform === "youtube" && (
                       <>
-                        <SelectItem value="youtube-views">Vues YouTube</SelectItem>
-                        <SelectItem value="youtube-subscribers">Abonnés YouTube</SelectItem>
-                        <SelectItem value="youtube-likes">Likes YouTube</SelectItem>
+                        <SelectItem value="youtube-views">Vues YouTube <span className="text-blue-500">(seulement 20 vues)</span></SelectItem>
+                        <SelectItem value="youtube-subscribers">Abonnés YouTube <span className="text-blue-500">(seulement 5 Abonnés)</span></SelectItem>
+                        <SelectItem value="youtube-likes">Likes YouTube <span className="text-blue-500">(seulement 20 likes)</span></SelectItem>
                       </>
-                    )}
+                    )} */}
                   </SelectContent>
                 </Select>
               </div>

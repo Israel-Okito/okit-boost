@@ -83,7 +83,7 @@ export default function ConditionsPage() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="font-semibold text-gray-900 mb-2">Plateforme</h4>
                     <p className="text-sm text-gray-600">
-                      TikTok, Instagram, YouTube et autres réseaux sociaux supportés.
+                      TikTok, Instagram, Facebook et autres réseaux sociaux supportés.
                     </p>
                   </div>
                 </div>
@@ -241,6 +241,10 @@ export default function ConditionsPage() {
                       <li className="flex items-center">
                         <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
                         <span className="text-gray-700">M-Pesa</span>
+                      </li>
+                      <li className="flex items-center">
+                        <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
+                        <span className="text-gray-700">Afrimoney</span>
                       </li>
                     </ul>
                   </div>

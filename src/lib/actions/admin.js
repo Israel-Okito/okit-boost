@@ -59,6 +59,7 @@ export async function updateOrderStatus(orderId, status, adminNotes = '') {
   }
 }
 
+
 export async function deleteOrder(orderId) {
   const { supabase } = await requireAdmin()
 
@@ -125,6 +126,9 @@ export async function updateTrialRequestStatus(requestId, status, adminNotes = '
       throw new Error('Statut invalide')
     }
 
+
+
+
     const { error } = await supabase
       .from('trial_requests')
       .update({
@@ -137,7 +141,6 @@ export async function updateTrialRequestStatus(requestId, status, adminNotes = '
     if (error) {
       throw new Error('Erreur lors de la mise à jour de la demande d\'essai')
     }
-
     revalidatePath('/admin')
     return { success: true }
   } catch (error) {
@@ -145,6 +148,9 @@ export async function updateTrialRequestStatus(requestId, status, adminNotes = '
     throw error
   }
 }
+
+
+
 
 export async function createManualOrder(orderData) {
   const { supabase } = await requireAdmin()

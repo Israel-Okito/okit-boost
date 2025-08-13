@@ -39,11 +39,11 @@ export default function Footer() {
                   Instagram
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/services/youtube" className="text-gray-400 hover:text-white transition-colors">
                   YouTube
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/services/facebook" className="text-gray-400 hover:text-white transition-colors">
                   Facebook
@@ -86,7 +86,19 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>  &copy; {new Date().getFullYear()} Okit-Boost. Tous droits réservés.</p>
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-white/60 text-sm">
+            &copy;  {new Date().getFullYear()} Okit-Boost - OKIT GROUPE. Tous droits réservés.
+            </p>
+            <Link
+              href="https://okitdev.com/portfolio"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-400 hover:text-purple-400 transition-colors text-sm font-medium mt-4 md:mt-0"
+            >
+              Coder par Israel Okito Diesho
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

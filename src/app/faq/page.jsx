@@ -15,7 +15,7 @@ export default function FAQPage() {
         {
           question: "Comment passer une commande sur Okit-Boost ?",
           answer:
-            "C'est très simple ! 1) Choisissez votre plateforme (TikTok, Instagram, YouTube), 2) Sélectionnez le service souhaité, 3) Entrez le lien cible et la quantité, 4) Ajoutez au panier, 5) Procédez au paiement via Mobile Money. Vous recevrez une confirmation par email et WhatsApp.",
+            "C'est très simple ! 1) Choisissez votre plateforme (TikTok, Instagram, facebook), 2) Sélectionnez le service souhaité, 3) Entrez le lien cible et la quantité, 4) Ajoutez au panier, 5) Procédez au paiement via Mobile Money. Vous recevrez une confirmation par email et WhatsApp.",
         },
         {
           question: "Combien de temps prend la livraison ?",
