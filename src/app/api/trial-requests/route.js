@@ -1,9 +1,15 @@
+// src/app/api/trial-requests/route.js
 import { createClient } from "@/utils/supabase/server"
 import { NextResponse } from "next/server"
 
 export async function POST(request) {
   try {
     const supabase = await createClient()
+    
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    }
     
     const trialData = await request.json()
 
@@ -18,31 +24,33 @@ export async function POST(request) {
       }
     }
 
-    // Vérifier si l'email n'a pas déjà fait une demande récente
+    // Vérifier si l'utilisateur n'a pas déjà fait une demande
     const { data: existingRequest } = await supabase
       .from('trial_requests')
-      .select('created_at')
+      .select('id')
       .eq('email', trialData.email)
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()) // 24h
       .single()
 
     if (existingRequest) {
       return NextResponse.json(
-        { error: 'Vous avez déjà fait une demande récemment. Veuillez attendre 24h.' },
+        { error: 'Vous avez déjà fait une demande d\'essai.' },
         { status: 429 }
       )
     }
 
+    // Insérer la nouvelle demande avec l'ID utilisateur
     const { error } = await supabase
       .from('trial_requests')
       .insert({
+        user_id: user.id,
         name: trialData.name,
         email: trialData.email,
         phone: trialData.phone,
         platform: trialData.platform,
         service: trialData.service,
         target_link: trialData.target_link,
-        notes: trialData.notes || null
+        notes: trialData.notes || null,
+        status: 'pending'
       })
 
     if (error) throw error

@@ -149,13 +149,13 @@ export const mockServices = [
       color: "from-purple-500 to-pink-500",
       description: "Développez votre compte Instagram",
     },
-    {
-      id: "youtube",
-      name: "YouTube",
-      icon: <Image src="/youtube.webp" alt="YouTube" width={80} height={80} />,
-      color: "from-red-500 to-red-600",
-      description: "Faites grandir votre chaîne YouTube",
-    },
+    // {
+    //   id: "youtube",
+    //   name: "YouTube",
+    //   icon: <Image src="/youtube.webp" alt="YouTube" width={80} height={80} />,
+    //   color: "from-red-500 to-red-600",
+    //   description: "Faites grandir votre chaîne YouTube",
+    // },
     {
       id: "facebook",
       name: "Facebook",

@@ -18,10 +18,11 @@ import {
   XCircle, 
   AlertCircle,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from "lucide-react"
 import { toast } from "sonner"
-import { updateOrderStatus, updateTrialRequestStatus } from "@/lib/actions/admin"
+import { updateOrderStatus, updateTrialRequestStatus, deleteOrder, deleteTrialRequest } from "@/lib/actions/admin"
 
 // Composants de Skeleton
 function StatsCardSkeleton() {
@@ -86,8 +87,10 @@ export default function AdminPanel() {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [selectedTrial, setSelectedTrial] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [updating, setUpdating] = useState(null) // ID de la commande en cours de mise à jour
-  const [updatingtrial, setUpdatingtrial] = useState(null) // ID de la commande en cours de mise à jour
+  const [updating, setUpdating] = useState(null)
+  const [updatingtrial, setUpdatingtrial] = useState(null)
+  const [deleting, setDeleting] = useState(null)
+  const [duplicateEmails, setDuplicateEmails] = useState([])
 
   // Charger les statistiques
   const fetchStats = useCallback(async () => {
@@ -113,7 +116,6 @@ export default function AdminPanel() {
       setLoading(false)
     }
   }, [])
-
 
   // Charger les commandes
   const fetchOrders = useCallback(async () => {
@@ -141,8 +143,7 @@ export default function AdminPanel() {
     }
   }, [statusFilter])
 
-
-  // Charger les demandes d'essaie
+  // Charger les demandes d'essai
   const fetchTrials = useCallback(async () => {
     try {
       setTrialsLoading(true)
@@ -150,7 +151,6 @@ export default function AdminPanel() {
       const url = statusFilter === 'all' 
       ? '/api/admin/trial-requets' 
       : `/api/admin/trial-requets?status=${statusFilter}`
-    
       
       const response = await fetch(url, {
         cache: 'no-store'
@@ -159,6 +159,13 @@ export default function AdminPanel() {
       
       if (response.ok) {
         setTrials(data.trials)
+        // Identifier les emails dupliqués
+        const emailCounts = {}
+        data.trials.forEach(trial => {
+          emailCounts[trial.email] = (emailCounts[trial.email] || 0) + 1
+        })
+        const duplicates = Object.keys(emailCounts).filter(email => emailCounts[email] > 1)
+        setDuplicateEmails(duplicates)
       } else {
         throw new Error(data.error)
       }
@@ -169,9 +176,6 @@ export default function AdminPanel() {
       setTrialsLoading(false)
     }
   }, [statusFilter])
-
-
-
 
   useEffect(() => {
     fetchStats()
@@ -185,19 +189,14 @@ export default function AdminPanel() {
     fetchTrials()
   }, [fetchTrials])
 
-
-
-
   const handleUpdateOrderStatus = async (orderId, newStatus, adminNotes = '') => {
     try {
       setUpdating(orderId)
       
-      // Utiliser server action au lieu d'un appel API
       await updateOrderStatus(orderId, newStatus, adminNotes)
       
       toast.success('Statut mis à jour avec succès')
       
-      // Actualiser les données
       await Promise.all([fetchOrders(), fetchStats()])
       setSelectedOrder(null)
     } catch (error) {
@@ -212,12 +211,10 @@ export default function AdminPanel() {
     try {
       setUpdatingtrial(requestId)
       
-      // Utiliser server action au lieu d'un appel API
       await updateTrialRequestStatus(requestId, newStatus, adminNotes)
       
       toast.success('Statut mis à jour avec succès')
       
-      // Actualiser les données
       await Promise.all([fetchTrials()])
       setSelectedTrial(null)
     } catch (error) {
@@ -225,6 +222,48 @@ export default function AdminPanel() {
       toast.error('Erreur lors de la mise à jour')
     } finally {
       setUpdatingtrial(null)
+    }
+  }
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette commande ? Cette action est irréversible.')) {
+      return
+    }
+
+    try {
+      setDeleting(orderId)
+      
+      await deleteOrder(orderId)
+      
+      toast.success('Commande supprimée avec succès')
+      
+      await Promise.all([fetchOrders(), fetchStats()])
+    } catch (error) {
+      console.error('Error deleting order:', error)
+      toast.error('Erreur lors de la suppression')
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const handleDeleteTrialRequest = async (requestId) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cette demande d\'essai ? Cette action est irréversible.')) {
+      return
+    }
+
+    try {
+      setDeleting(requestId)
+      
+      await deleteTrialRequest(requestId)
+      
+      toast.success('Demande d\'essai supprimée avec succès')
+      
+      await fetchTrials()
+    } catch (error) {
+      console.error('Error deleting trial request:', error)
+      toast.error('Erreur lors de la suppression')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -249,7 +288,6 @@ export default function AdminPanel() {
     }
   }
   
-
   const getStatusLabel = (status) => {
     switch (status) {
       case 'completed': return 'Terminé'
@@ -290,6 +328,11 @@ export default function AdminPanel() {
       default: return 'bg-gray-100 text-gray-800'
     }
   }
+
+  const isDuplicateEmail = (email) => {
+    return duplicateEmails.includes(email)
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -480,14 +523,30 @@ export default function AdminPanel() {
                       </div>
 
                       <div className="flex items-center justify-between">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          <Eye className="w-4 h-4 mr-2" />
-                          Voir détails
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Voir détails
+                          </Button>
+                          
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteOrder(order.id)}
+                            disabled={deleting === order.id}
+                          >
+                            {deleting === order.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
+                            Supprimer
+                          </Button>
+                        </div>
 
                         <div className="flex space-x-2">
                           {order.status === 'pending' && (
@@ -599,6 +658,11 @@ export default function AdminPanel() {
           <Card>
             <CardHeader>
               <CardTitle>Filtrer les demandes d'essaie</CardTitle>
+              {duplicateEmails.length > 0 && (
+                <CardDescription className="text-orange-600">
+                  ⚠️ {duplicateEmails.length} email(s) avec des demandes multiples détecté(s)
+                </CardDescription>
+              )}
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -641,8 +705,23 @@ export default function AdminPanel() {
               ) : (
                 <div className="space-y-4">
                   {trials.map((trial) => (
-                    <div key={trial.id} className="border rounded-lg p-4 bg-blue-100 hover:bg-gray-50">
-                          <span className="font-medium ">{trial.id}</span>
+                    <div 
+                      key={trial.id} 
+                      className={`border rounded-lg p-4 hover:bg-gray-50 ${
+                        isDuplicateEmail(trial.email) 
+                          ? 'bg-orange-50 border-orange-200' 
+                          : 'bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">#{trial.id}</span>
+                        {isDuplicateEmail(trial.email) && (
+                          <Badge variant="destructive" className="text-xs">
+                            Email dupliqué
+                          </Badge>
+                        )}
+                      </div>
+                      
                       <div className="flex items-center justify-between my-3">
                         <div className="flex items-center space-x-3">
                           <Badge className={getStatusColorTrial(trial.status)}>
@@ -657,25 +736,25 @@ export default function AdminPanel() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-gray-900" >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-gray-900">
                         <div className="flex flex-col items-start">
-                          <div className="text-sm font-medium ">
+                          <div className="text-sm font-medium">
                             {trial.name || 'N/A'}
                           </div>
-                          <div className="text-sm">
+                          <div className={`text-sm ${isDuplicateEmail(trial.email) ? 'font-semibold text-orange-700' : ''}`}>
                             {trial.email || 'N/A'}
                           </div>
-                          <div className="text-sm ">
+                          <div className="text-sm">
                             {trial.phone || 'N/A'}
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="text-sm text-gray-600">
-                          Plateforme :  {trial.platform || 'N/A'} 
+                            Plateforme : {trial.platform || 'N/A'} 
                           </div>
                           <div className="text-sm text-gray-600">
-                          Service :  {trial.service|| 'N/A'} 
+                            Service : {trial.service || 'N/A'} 
                           </div>
                           <div className="text-sm text-gray-600">
                             Lien : {trial.target_link || 'N/A'} 
@@ -683,13 +762,25 @@ export default function AdminPanel() {
                           <div className="text-sm text-gray-600">
                             Notes: {trial.notes || 'N/A'}
                           </div>
-                         
                         </div>
-
-                    
                       </div>
 
                       <div className="flex items-center justify-between">
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteTrialRequest(trial.id)}
+                            disabled={deleting === trial.id}
+                          >
+                            {deleting === trial.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                            ) : (
+                              <Trash2 className="w-4 h-4 mr-2" />
+                            )}
+                            Supprimer
+                          </Button>
+                        </div>
 
                         <div className="flex space-x-2">
                           {trial.status === 'pending' && (
@@ -738,10 +829,9 @@ export default function AdminPanel() {
             </CardContent>
           </Card>
         </TabsContent>
-
       </Tabs>
 
-      {/* Modal détails commande - Reste identique */}
+      {/* Modal détails commande */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -928,9 +1018,8 @@ export default function AdminPanel() {
         </div>
       )}
 
-
-       {/* Modal détails demandes - Reste identique */}
-       {selectedTrial && (
+      {/* Modal détails demandes */}
+      {selectedTrial && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <div className="p-6">
@@ -949,16 +1038,15 @@ export default function AdminPanel() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div>
-                      <span className="font-medium">id commande: </span>
+                      <span className="font-medium">ID commande: </span>
                       {selectedTrial.id}
                     </div>
                     <div>
                       <span className="font-medium">Statut: </span>
-                      <Badge className={getStatusColor(selectedTrial.status)}>
-                        {getStatusLabel(selectedTrial.status)}
+                      <Badge className={getStatusColorTrial(selectedTrial.status)}>
+                        {getStatusLabelTrial(selectedTrial.status)}
                       </Badge>
                     </div>
-             
                     <div>
                       <span className="font-medium">Date: </span>
                       {new Date(selectedTrial.created_at).toLocaleString('fr-FR')}
@@ -978,14 +1066,19 @@ export default function AdminPanel() {
                     </div>
                     <div>
                       <span className="font-medium">Email: </span>
-                      {selectedTrial.email}
+                      <span className={isDuplicateEmail(selectedTrial.email) ? 'font-semibold text-orange-700' : ''}>
+                        {selectedTrial.email}
+                        {isDuplicateEmail(selectedTrial.email) && (
+                          <Badge variant="destructive" className="ml-2 text-xs">
+                            Dupliqué
+                          </Badge>
+                        )}
+                      </span>
                     </div>
                     <div>
                       <span className="font-medium">Téléphone: </span>
                       {selectedTrial.phone}
                     </div>
-                  
-             
                   </CardContent>
                 </Card>
               </div>
@@ -997,19 +1090,17 @@ export default function AdminPanel() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                          Service :<h4 className="font-medium">{selectedTrial.service}</h4>
-                            <p className="text-sm text-gray-600 capitalize">
-                           Plateforme : {selectedTrial.platform}
-                            </p>
-                          </div>
-                     
-                        <div className="text-sm text-gray-600 truncate">
-                          Lien: {selectedTrial.target_link}
-                        </div>
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div>Service : <h4 className="font-medium inline">{selectedTrial.service}</h4></div>
+                        <p className="text-sm text-gray-600 capitalize">
+                          Plateforme : {selectedTrial.platform}
+                        </p>
                       </div>
-                 
+                    </div>
+                    <div className="text-sm text-gray-600 truncate">
+                      Lien: {selectedTrial.target_link}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -1038,10 +1129,9 @@ export default function AdminPanel() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="pending">En attente</SelectItem>
-                          <SelectItem value="processing">En cours</SelectItem>
+                          <SelectItem value="approved">Approuvé</SelectItem>
                           <SelectItem value="completed">Terminé</SelectItem>
-                          <SelectItem value="cancelled">Annulé</SelectItem>
-                          <SelectItem value="refunded">Remboursé</SelectItem>
+                          <SelectItem value="rejected">Rejeté</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -1052,7 +1142,7 @@ export default function AdminPanel() {
                       </label>
                       <Textarea
                         placeholder="Ajouter des notes internes..."
-                        defaultValue={selectedOrder.admin_notes || ''}
+                        defaultValue={selectedTrial.admin_notes || ''}
                         rows={3}
                         onBlur={(e) => {
                           if (e.target.value !== selectedTrial.admin_notes) {

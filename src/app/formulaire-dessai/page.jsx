@@ -1,19 +1,20 @@
 "use client"
 
-import  React from "react"
-
-import { useState } from "react"
+import React from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Star, Gift, CheckCircle } from "lucide-react"
+import { Star, Gift, CheckCircle, Lock, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
-
+import { useAuth } from "@/lib/hooks/useAuth"
+import Link from "next/link"
 
 export default function TrialFormPage() {
+  const { user, profile, loading } = useAuth()
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,6 +25,47 @@ export default function TrialFormPage() {
     notes: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [hasExistingRequest, setHasExistingRequest] = useState(false)
+  const [checkingExisting, setCheckingExisting] = useState(false)
+
+  // Vérifier si l'utilisateur a déjà fait une demande
+  useEffect(() => {
+    if (user && !loading) {
+      checkExistingRequest()
+      // Pré-remplir le formulaire avec les infos du profil
+      setFormData(prev => ({
+        ...prev,
+        name: profile?.full_name || "",
+        email: user.email || "",
+        phone: profile?.phone || ""
+      }))
+    }
+  }, [user, profile, loading])
+
+  const checkExistingRequest = async () => {
+    if (!user) return
+    
+    setCheckingExisting(true)
+    try {
+      const response = await fetch('/api/trial-requests/check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email: user.email })
+      })
+
+      const result = await response.json()
+      
+      if (response.ok) {
+        setHasExistingRequest(result.hasExisting)
+      }
+    } catch (error) {
+      console.error('Error checking existing request:', error)
+    } finally {
+      setCheckingExisting(false)
+    }
+  }
 
   const handleInputChange = (e) => {
     setFormData({
@@ -34,6 +76,17 @@ export default function TrialFormPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    if (!user) {
+      toast.error('Veuillez vous connecter pour faire une demande d\'essai')
+      return
+    }
+
+    if (hasExistingRequest) {
+      toast.error('Vous avez déjà fait une demande d\'essai')
+      return
+    }
+
     setIsSubmitting(true)
   
     try {
@@ -42,7 +95,10 @@ export default function TrialFormPage() {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          user_id: user.id
+        })
       })
   
       const result = await response.json()
@@ -52,12 +108,13 @@ export default function TrialFormPage() {
       }
   
       toast.success('Demande d\'essai envoyée avec succès!')
+      setHasExistingRequest(true)
   
       // Reset form
       setFormData({
-        name: "",
-        email: "",
-        phone: "",
+        name: profile?.full_name || "",
+        email: user.email || "",
+        phone: profile?.phone || "",
         platform: "",
         service: "",
         target_link: "",
@@ -71,6 +128,59 @@ export default function TrialFormPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Si l'utilisateur n'est pas connecté
+  if (!user) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center mb-12">
+          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center">
+            <Lock className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Connexion requise</h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Vous devez être connecté pour faire une demande d'essai gratuit
+          </p>
+          <div className="space-x-4">
+            <Link href="/connexion">
+              <Button size="lg">
+                Se connecter
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Benefits - Toujours affichés */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <div className="text-center p-6 bg-green-50 rounded-lg">
+            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
+            <h3 className="font-semibold text-green-800 mb-2">100% Gratuit</h3>
+            <p className="text-sm text-green-700">Aucun frais, aucune carte de crédit requise</p>
+          </div>
+          <div className="text-center p-6 bg-blue-50 rounded-lg">
+            <Star className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+            <h3 className="font-semibold text-blue-800 mb-2">Qualité Premium</h3>
+            <p className="text-sm text-blue-700">Même qualité que nos services payants</p>
+          </div>
+          <div className="text-center p-6 bg-purple-50 rounded-lg">
+            <Gift className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+            <h3 className="font-semibold text-purple-800 mb-2">Livraison Rapide</h3>
+            <p className="text-sm text-purple-700">Résultats visibles sous 24h</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -80,7 +190,29 @@ export default function TrialFormPage() {
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4">Essai gratuit</h1>
         <p className="text-xl text-gray-600">Testez nos services gratuitement avant de commander</p>
+        
+        {checkingExisting && (
+          <div className="mt-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-sm text-gray-500 mt-2">Vérification...</p>
+          </div>
+        )}
       </div>
+
+      {/* Alerte si demande existante */}
+      {hasExistingRequest && !checkingExisting && (
+        <div className="mb-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center">
+            <AlertCircle className="w-5 h-5 text-yellow-600 mr-2" />
+            <div>
+              <h3 className="font-medium text-yellow-800">Demande d'essai déjà effectuée</h3>
+              <p className="text-sm text-yellow-700">
+                Vous avez déjà fait une demande d'essai. Consultez votre compte pour voir le statut.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Benefits */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -119,6 +251,7 @@ export default function TrialFormPage() {
                   onChange={handleInputChange}
                   required
                   placeholder="Votre nom complet"
+                  disabled={hasExistingRequest}
                 />
               </div>
 
@@ -132,6 +265,7 @@ export default function TrialFormPage() {
                   onChange={handleInputChange}
                   required
                   placeholder="votre@email.com"
+                  disabled={true} // Toujours désactivé car c'est l'email de l'utilisateur connecté
                 />
               </div>
             </div>
@@ -145,6 +279,7 @@ export default function TrialFormPage() {
                 onChange={handleInputChange}
                 required
                 placeholder="+243 XXX XXX XXX"
+                disabled={hasExistingRequest}
               />
             </div>
 
@@ -154,6 +289,7 @@ export default function TrialFormPage() {
                 <Select
                   value={formData.platform}
                   onValueChange={(value) => setFormData({ ...formData, platform: value, service: "" })}
+                  disabled={hasExistingRequest}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Choisissez une plateforme" />
@@ -161,7 +297,6 @@ export default function TrialFormPage() {
                   <SelectContent>
                     <SelectItem value="tiktok">TikTok</SelectItem>
                     <SelectItem value="instagram">Instagram</SelectItem>
-                    {/* <SelectItem value="youtube">YouTube</SelectItem> */}
                   </SelectContent>
                 </Select>
               </div>
@@ -171,6 +306,7 @@ export default function TrialFormPage() {
                 <Select
                   value={formData.service}
                   onValueChange={(value) => setFormData({ ...formData, service: value })}
+                  disabled={hasExistingRequest}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Choisissez un service" />
@@ -190,13 +326,6 @@ export default function TrialFormPage() {
                         <SelectItem value="instagram-views">Vues Instagram <span className="text-blue-500">(seulement 20 vues)</span></SelectItem>
                       </>
                     )}
-                    {/* {formData.platform === "youtube" && (
-                      <>
-                        <SelectItem value="youtube-views">Vues YouTube <span className="text-blue-500">(seulement 20 vues)</span></SelectItem>
-                        <SelectItem value="youtube-subscribers">Abonnés YouTube <span className="text-blue-500">(seulement 5 Abonnés)</span></SelectItem>
-                        <SelectItem value="youtube-likes">Likes YouTube <span className="text-blue-500">(seulement 20 likes)</span></SelectItem>
-                      </>
-                    )} */}
                   </SelectContent>
                 </Select>
               </div>
@@ -211,6 +340,7 @@ export default function TrialFormPage() {
                 onChange={handleInputChange}
                 required
                 placeholder="Lien vers votre profil, vidéo ou post"
+                disabled={hasExistingRequest}
               />
             </div>
 
@@ -223,11 +353,18 @@ export default function TrialFormPage() {
                 onChange={handleInputChange}
                 placeholder="Informations supplémentaires sur votre demande..."
                 rows={4}
+                disabled={hasExistingRequest}
               />
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Envoi en cours..." : "Demander un essai gratuit"}
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isSubmitting || hasExistingRequest || checkingExisting}
+            >
+              {isSubmitting ? "Envoi en cours..." : 
+               hasExistingRequest ? "Vous avez déjà fait une demande" :
+               "Demander un essai gratuit"}
             </Button>
           </form>
         </CardContent>
@@ -246,7 +383,7 @@ export default function TrialFormPage() {
           <div className="bg-gray-50 p-6 rounded-lg">
             <h3 className="font-semibold text-gray-900 mb-2">Puis-je demander plusieurs essais ?</h3>
             <p className="text-gray-600">
-              Vous pouvez demander un essai par plateforme et par service pour tester la qualité.
+              Vous pouvez demander un essai par compte utilisateur pour tester la qualité.
             </p>
           </div>
           <div className="bg-gray-50 p-6 rounded-lg">

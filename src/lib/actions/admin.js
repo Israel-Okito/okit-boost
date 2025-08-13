@@ -48,7 +48,6 @@ export async function updateOrderStatus(orderId, status, adminNotes = '') {
       throw new Error('Erreur lors de la mise à jour de la commande')
     }
 
-    // Revalider les pages qui affichent les commandes
     revalidatePath('/admin')
     revalidatePath('/mon-compte')
 
@@ -58,7 +57,6 @@ export async function updateOrderStatus(orderId, status, adminNotes = '') {
     throw error
   }
 }
-
 
 export async function deleteOrder(orderId) {
   const { supabase } = await requireAdmin()
@@ -92,6 +90,84 @@ export async function deleteOrder(orderId) {
   }
 }
 
+export async function updateTrialRequestStatus(requestId, status, adminNotes = '') {
+  const { supabase } = await requireAdmin()
+
+  try {
+    const validStatuses = ['pending', 'approved', 'rejected', 'completed']
+    if (!validStatuses.includes(status)) {
+      throw new Error('Statut invalide')
+    }
+
+    const { error } = await supabase
+      .from('trial_requests')
+      .update({
+        status,
+        admin_notes: adminNotes || null,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', requestId)
+
+    if (error) {
+      throw new Error('Erreur lors de la mise à jour de la demande d\'essai')
+    }
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating trial request:', error)
+    throw error
+  }
+}
+
+// Nouvelle fonction pour supprimer une demande d'essai
+export async function deleteTrialRequest(requestId) {
+  const { supabase } = await requireAdmin()
+
+  try {
+    const { error } = await supabase
+      .from('trial_requests')
+      .delete()
+      .eq('id', requestId)
+
+    if (error) {
+      throw new Error('Erreur lors de la suppression de la demande d\'essai')
+    }
+
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting trial request:', error)
+    throw error
+  }
+}
+
+// Fonction pour obtenir les emails dupliqués
+export async function getEmailDuplicates() {
+  const { supabase } = await requireAdmin()
+
+  try {
+    const { data, error } = await supabase
+      .from('trial_requests')
+      .select('email')
+
+    if (error) {
+      throw new Error('Erreur lors de la récupération des emails')
+    }
+
+    // Compter les occurrences de chaque email
+    const emailCounts = {}
+    data.forEach(item => {
+      emailCounts[item.email] = (emailCounts[item.email] || 0) + 1
+    })
+
+    // Retourner les emails qui apparaissent plus d'une fois
+    return Object.keys(emailCounts).filter(email => emailCounts[email] > 1)
+  } catch (error) {
+    console.error('Error getting email duplicates:', error)
+    return []
+  }
+}
+
 export async function verifyPayment(orderId) {
   const { supabase } = await requireAdmin()
 
@@ -116,41 +192,6 @@ export async function verifyPayment(orderId) {
     throw error
   }
 }
-
-export async function updateTrialRequestStatus(requestId, status, adminNotes = '') {
-  const { supabase } = await requireAdmin()
-
-  try {
-    const validStatuses = ['pending', 'approved', 'rejected', 'completed']
-    if (!validStatuses.includes(status)) {
-      throw new Error('Statut invalide')
-    }
-
-
-
-
-    const { error } = await supabase
-      .from('trial_requests')
-      .update({
-        status,
-        admin_notes: adminNotes || null,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', requestId)
-
-    if (error) {
-      throw new Error('Erreur lors de la mise à jour de la demande d\'essai')
-    }
-    revalidatePath('/admin')
-    return { success: true }
-  } catch (error) {
-    console.error('Error updating trial request:', error)
-    throw error
-  }
-}
-
-
-
 
 export async function createManualOrder(orderData) {
   const { supabase } = await requireAdmin()
