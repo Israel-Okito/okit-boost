@@ -20,10 +20,10 @@ export default function Header() {
 
   return (
     <header className="bg-gradient-to-r bg-[#210238] via-purple-950 to-yellow-500  shadow-sm sticky top-0 z-40 ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-1 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2  ">
+          <Link href="/" className="flex items-center  ">
            <Image src={"/logo.webp"} alt="okit boost" width={80} height={80}/>
           </Link>
 
@@ -44,11 +44,11 @@ export default function Header() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center space-x-4 ">
+          <div className="flex items-center space-x-2 sm:space-x-4 ">
             <Link href="/caisse" className="relative ">
               <Button variant="outline" size="sm" className="cursor-pointer">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Panier
+                <ShoppingCart className="w-4 h-4 " />
+               <span className="hidden sm:inline"> Panier</span>
                 {items.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {items.length}
@@ -71,11 +71,11 @@ export default function Header() {
                 )}
                 <Link href="/mon-compte">
                   <Button variant="outline" size="sm">
-                    <User className="w-4 h-4 mr-2" />
+                    <User className="w-4 h-4 " />
                     <span className="hidden sm:inline cursor-pointer">
                       {profile?.full_name || user.email?.split('@')[0] || 'Mon compte'}
                     </span>
-                    <span className="sm:hidden">Compte</span>
+                    {/* <span className="sm:hidden">Compte</span> */}
                   </Button>
                 </Link>
                 <Button onClick={handleLogout} variant="outline" size="sm" className="cursor-pointer">
@@ -96,7 +96,7 @@ export default function Header() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="md:hidden" 
+              className="md:hidden border " 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -110,14 +110,14 @@ export default function Header() {
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t">
               <Link
                 href="/services"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                className="block px-3 py-2 text-white hover:text-gray-900 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Services
               </Link>
               <Link
                 href="/formulaire-dessai"
-                className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                className="block px-3 py-2 text-white hover:text-gray-900 font-medium"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Essai gratuit
@@ -127,7 +127,7 @@ export default function Header() {
                 <>
                   <Link
                     href="/mon-compte"
-                    className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                    className="block px-3 py-2 text-white hover:text-gray-900 font-medium"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Mon compte
@@ -135,7 +135,7 @@ export default function Header() {
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                      className="block px-3 py-2 text-white hover:text-gray-900 font-medium"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Administration
@@ -146,7 +146,7 @@ export default function Header() {
                       handleLogout()
                       setIsMenuOpen(false)
                     }}
-                    className="block w-full text-left px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                    className="block w-full text-left px-3 py-2 text-white hover:text-gray-900 font-medium"
                   >
                     Déconnexion
                   </button>
@@ -156,7 +156,7 @@ export default function Header() {
               {!user && (
                 <Link
                   href="/connexion"
-                  className="block px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
+                  className="block px-3 py-2 text-white hover:text-gray-900 font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Connexion
