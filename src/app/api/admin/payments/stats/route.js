@@ -1,25 +1,26 @@
 // // src/app/api/admin/payments/stats/route.js
-// import { createClient } from "@/utils/supabase/server"
-// import { NextResponse } from "next/server"
+import { createClient } from "@/utils/supabase/server"
+import { NextResponse } from "next/server"
 
-// async function requireAdmin(supabase) {
-//   const { data: { user } } = await supabase.auth.getUser()
-//   if (!user) {
-//     throw new Error('Non authentifié')
-//   }
+async function requireAdmin() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    throw new Error('Non authentifié')
+  }
 
-//   const { data: profile } = await supabase
-//     .from('profiles')
-//     .select('role')
-//     .eq('id', user.id)
-//     .single()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-//   if (!profile || profile.role !== 'admin') {
-//     throw new Error('Accès refusé')
-//   }
+  if (!profile || profile.role !== 'admin') {
+    throw new Error('Accès refusé')
+  }
 
-//   return user
-// }
+  return user
+}
 
 // export async function GET(request) {
 //   try {
