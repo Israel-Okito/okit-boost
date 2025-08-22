@@ -5,5 +5,5 @@ import Cancel from "@/components/paiements/Cancel"
 
 export default function PaymentCancelPage() {
 
-  return <Cancel/>
+  return <div>dd</div>
 }
