@@ -202,6 +202,8 @@ export default function CheckoutPage() {
 
       const paymentResult = await paymentResponse.json()
 
+      console.log('paymentResult', paymentResult)
+
       if (!paymentResponse.ok) {
         throw new Error(paymentResult.error || 'Erreur lors de l\'initialisation du paiement')
       }
