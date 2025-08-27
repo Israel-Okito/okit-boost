@@ -56,23 +56,10 @@ export async function POST(request) {
     const webhookData = cinetPayService.processWebhookNotification(payload)
     console.log('Données webhook traitées:', webhookData)
 
-    // Récupération de la transaction avec informations de commande
+    // Récupération de la transaction (sans commande car elle n'existe peut-être pas encore)
     const { data: transaction, error: transactionError } = await supabase
       .from('payment_transactions')
-      .select(`
-        *,
-        orders (
-          id,
-          order_number,
-          status,
-          user_id,
-          customer_name,
-          customer_email,
-          total_usd,
-          total_cdf,
-          currency
-        )
-      `)
+      .select('*')
       .eq('transaction_id', webhookData.transactionId)
       .single()
 
@@ -102,7 +89,7 @@ export async function POST(request) {
       id: transaction.id,
       currentStatus: transaction.status,
       newStatus: webhookData.status,
-      orderId: transaction.order_id
+      userId: transaction.user_id
     })
 
     // Éviter le traitement de doublons
@@ -189,7 +176,6 @@ export async function POST(request) {
         success: true,
         transactionId: webhookData.transactionId,
         status: webhookData.status,
-        orderNumber: transaction.orders.order_number,
         processedAt: new Date().toISOString(),
         processingTime: Date.now() - startTime
       })
@@ -239,20 +225,17 @@ export async function POST(request) {
  * Traiter le changement de statut selon le nouveau statut
  */
 async function processPaymentStatusChange(supabase, transaction, webhookData) {
-  const orderId = transaction.order_id
-  const orderData = transaction.orders
-
   switch (webhookData.status) {
     case 'ACCEPTED':
-      await handlePaymentAccepted(supabase, orderId, orderData, webhookData)
+      await handlePaymentAccepted(supabase, transaction, webhookData)
       break
     
     case 'REFUSED':
-      await handlePaymentRefused(supabase, orderId, orderData, webhookData)
+      await handlePaymentRefused(supabase, transaction, webhookData)
       break
     
     case 'CANCELLED':
-      await handlePaymentCancelled(supabase, orderId, orderData, webhookData)
+      await handlePaymentCancelled(supabase, transaction, webhookData)
       break
     
     default:
@@ -262,37 +245,92 @@ async function processPaymentStatusChange(supabase, transaction, webhookData) {
 }
 
 /**
- * Traiter un paiement accepté
+ * Traiter un paiement accepté - CRÉER LA COMMANDE ICI
  */
-async function handlePaymentAccepted(supabase, orderId, orderData, webhookData) {
+async function handlePaymentAccepted(supabase, transaction, webhookData) {
   try {
-    console.log(`Traitement paiement accepté pour commande ${orderData.order_number}`)
+    console.log(`Traitement paiement accepté pour transaction ${webhookData.transactionId}`)
 
-    // Mise à jour de la commande
-    const { error: orderError } = await supabase
+    // Récupérer les métadonnées de la transaction pour créer la commande
+    const metadata = JSON.parse(transaction.metadata || '{}')
+    const cartItems = metadata.cartItems || []
+
+    if (!cartItems.length) {
+      throw new Error('Aucun item trouvé dans les métadonnées de la transaction')
+    }
+
+    // Générer un numéro de commande unique
+    const orderNumber = `OKIT${Date.now()}${Math.random().toString(36).substring(2, 6).toUpperCase()}`
+
+    // Créer la commande maintenant que le paiement est confirmé
+    const { data: order, error: orderError } = await supabase
       .from('orders')
-      .update({
+      .insert({
+        order_number: orderNumber,
+        user_id: transaction.user_id,
+        total_usd: metadata.totalUSD || 0,
+        total_cdf: metadata.totalCDF || 0,
+        currency: metadata.currency || 'CDF',
+        customer_name: transaction.customer_name || 'Client',
+        customer_email: transaction.customer_email,
+        customer_phone: transaction.customer_phone,
+        payment_method: webhookData.paymentMethod,
+        payment_transaction_id: transaction.transaction_id,
         status: 'processing',
         payment_status: 'paid',
-        payment_method: webhookData.paymentMethod,
         paid_at: new Date().toISOString(),
         admin_notes: `Paiement confirmé via ${webhookData.paymentMethod} - Opérateur: ${webhookData.operatorId || 'N/A'}`,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
-      .eq('id', orderId)
+      .select()
+      .single()
 
     if (orderError) {
-      throw new Error(`Erreur mise à jour commande: ${orderError.message}`)
+      throw new Error(`Erreur création commande: ${orderError.message}`)
     }
+
+    // Créer les items de la commande
+    const orderItems = cartItems.map(item => ({
+      order_id: order.id,
+      service_id: item.service_id,
+      service_name: item.service_name,
+      platform_name: item.platform_id,
+      target_link: item.target_link,
+      quantity: item.quantity,
+      unit_price_usd: item.price_usd,
+      unit_price_cdf: item.price_cdf,
+      total_usd: item.total_usd,
+      total_cdf: item.total_cdf
+    }))
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems)
+
+    if (itemsError) {
+      // Rollback: supprimer la commande si les items n'ont pas pu être créés
+      await supabase.from('orders').delete().eq('id', order.id)
+      throw new Error(`Erreur création items commande: ${itemsError.message}`)
+    }
+
+    // Mettre à jour la transaction avec l'ID de la commande créée
+    await supabase
+      .from('payment_transactions')
+      .update({
+        order_id: order.id,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', transaction.id)
 
     // Envoi des notifications
     await Promise.all([
-      sendPaymentConfirmationEmail(orderData, webhookData),
-      notifyAdminNewPayment(orderData, webhookData),
-      logPaymentSuccess(orderData, webhookData)
+      sendPaymentConfirmationEmail(order, webhookData),
+      notifyAdminNewPayment(order, webhookData),
+      logPaymentSuccess(order, webhookData)
     ])
 
-    console.log(`Paiement accepté traité avec succès pour commande ${orderData.order_number}`)
+    console.log(`✅ Commande ${orderNumber} créée avec succès après paiement confirmé`)
 
   } catch (error) {
     console.error('Erreur traitement paiement accepté:', error)
@@ -301,29 +339,23 @@ async function handlePaymentAccepted(supabase, orderId, orderData, webhookData) 
 }
 
 /**
- * Traiter un paiement refusé
+ * Traiter un paiement refusé - PAS DE COMMANDE À METTRE À JOUR
  */
-async function handlePaymentRefused(supabase, orderId, orderData, webhookData) {
+async function handlePaymentRefused(supabase, transaction, webhookData) {
   try {
-    console.log(`Traitement paiement refusé pour commande ${orderData.order_number}`)
+    console.log(`Traitement paiement refusé pour transaction ${webhookData.transactionId}`)
 
-    const { error: orderError } = await supabase
-      .from('orders')
-      .update({
-        payment_status: 'failed',
-        admin_notes: `Paiement refusé - Méthode: ${webhookData.paymentMethod} - Opérateur: ${webhookData.operatorId || 'N/A'}`,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', orderId)
-
-    if (orderError) {
-      throw new Error(`Erreur mise à jour commande: ${orderError.message}`)
-    }
-
+    // Pas de commande à mettre à jour car elle n'existe pas encore
+    // La transaction reste avec le statut REFUSED
+    
     // Notification du client (optionnel)
-    await sendPaymentFailureEmail(orderData, webhookData)
+    await sendPaymentFailureEmail({
+      customer_email: transaction.customer_email,
+      customer_name: transaction.customer_name || 'Client',
+      transaction_id: webhookData.transactionId
+    }, webhookData)
 
-    console.log(`Paiement refusé traité pour commande ${orderData.order_number}`)
+    console.log(`Paiement refusé traité pour transaction ${webhookData.transactionId}`)
 
   } catch (error) {
     console.error('Erreur traitement paiement refusé:', error)
@@ -332,27 +364,16 @@ async function handlePaymentRefused(supabase, orderId, orderData, webhookData) {
 }
 
 /**
- * Traiter un paiement annulé
+ * Traiter un paiement annulé - PAS DE COMMANDE À METTRE À JOUR
  */
-async function handlePaymentCancelled(supabase, orderId, orderData, webhookData) {
+async function handlePaymentCancelled(supabase, transaction, webhookData) {
   try {
-    console.log(`Traitement paiement annulé pour commande ${orderData.order_number}`)
+    console.log(`Traitement paiement annulé pour transaction ${webhookData.transactionId}`)
 
-    const { error: orderError } = await supabase
-      .from('orders')
-      .update({
-        status: 'cancelled',
-        payment_status: 'cancelled',
-        admin_notes: `Paiement annulé par l'utilisateur - Méthode: ${webhookData.paymentMethod}`,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', orderId)
+    // Pas de commande à mettre à jour car elle n'existe pas encore
+    // La transaction reste avec le statut CANCELLED
 
-    if (orderError) {
-      throw new Error(`Erreur mise à jour commande: ${orderError.message}`)
-    }
-
-    console.log(`Paiement annulé traité pour commande ${orderData.order_number}`)
+    console.log(`Paiement annulé traité pour transaction ${webhookData.transactionId}`)
 
   } catch (error) {
     console.error('Erreur traitement paiement annulé:', error)

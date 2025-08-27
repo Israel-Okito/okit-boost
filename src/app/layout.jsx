@@ -33,14 +33,14 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning={true}
       >
         <AuthProvider>
-       <div className="grid grid-rows-[auto,1fr,auto] min-h-screen">
-          <Header/>
-          <main>
-            {children}
-          </main>
-          <Toaster/>
-          <Footer/>
-       </div>
+          <div className="grid grid-rows-[auto,1fr,auto] min-h-screen">
+            <Header/>
+            <main>
+              {children}
+            </main>
+            <Toaster/>
+            <Footer/>
+          </div>
         </AuthProvider>
       </body>
     </html>

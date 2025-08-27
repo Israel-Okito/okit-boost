@@ -9,6 +9,16 @@ export const useCart = create()(
   persist(
     (set, get) => ({
       items: [],
+      // Migration automatique des anciens items
+      migrateItems: () => set((state) => ({
+        items: state.items.map(item => ({
+          ...item,
+          // Migrer platform vers platform_id si nécessaire
+          platform_id: item.platform_id || item.platform,
+          // Supprimer l'ancien champ platform
+          platform: undefined
+        }))
+      })),
       addItem: (item) =>
         set((state) => {
           const existingItem = state.items.find((i) => i.service_id === item.service_id)
@@ -43,6 +53,14 @@ export const useCart = create()(
       clearCart: () => set({ items: [] }),
       getTotalUSD: () => get().items.reduce((sum, item) => sum + item.total_usd, 0),
       getTotalCDF: () => get().items.reduce((sum, item) => sum + item.total_cdf, 0),
+      // Initialisation avec migration automatique
+      initialize: () => {
+        const state = get()
+        if (state.items.some(item => item.platform && !item.platform_id)) {
+          console.log('Migrating cart items from platform to platform_id')
+          state.migrateItems()
+        }
+      },
     }),
     {
       name: "okit-boost-cart",

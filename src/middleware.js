@@ -216,31 +216,15 @@ export async function middleware(request) {
       }
     }
 
+
+
     // Protection des routes utilisateur authentifié
-    // const protectedRoutes = ['/mon-compte', '/caisse']
-    // const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+    const protectedRoutes = ['/mon-compte', '/caisse']
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
 
-    // if (isProtectedRoute && !user) {
-    //   const redirectUrl = new URL('/connexion', request.url)
-    //   redirectUrl.searchParams.set('redirect', pathname)
-    //   return NextResponse.redirect(redirectUrl)
-    // }
-
-    const pathnamecompte = request.nextUrl.pathname
-    const isProtectedRoutecompte = pathnamecompte.startsWith('/mon-compte')
-  
-    if (isProtectedRoutecompte && !user) {
+    if (isProtectedRoute && !user) {
       const redirectUrl = new URL('/connexion', request.url)
-      redirectUrl.searchParams.set('redirect', pathnamecaisse)
-      return NextResponse.redirect(redirectUrl)
-    }
-
-    const pathnamecaisse = request.nextUrl.pathname
-    const isProtectedRoutecaisse = pathnamecaisse.startsWith('/caisse')
-  
-    if (isProtectedRoutecaisse && !user) {
-      const redirectUrl = new URL('/connexion', request.url)
-      redirectUrl.searchParams.set('redirect', pathnamecaisse)
+      redirectUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(redirectUrl)
     }
 

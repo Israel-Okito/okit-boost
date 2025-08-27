@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useAuth } from "@/lib/hooks/useAuth"
+import { useRouter } from "next/navigation"
+import Dashboard from "@/components/admin/Dashboard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +22,9 @@ import {
   AlertCircle,
   Eye,
   RefreshCw,
-  Trash2
+  Trash2,
+  Shield,
+  Settings
 } from "lucide-react"
 import { toast } from "sonner"
 import { updateOrderStatus, updateTrialRequestStatus, deleteOrder, deleteTrialRequest } from "@/lib/actions/admin"
@@ -78,6 +83,173 @@ function OrderCardSkeleton() {
 }
 
 export default function AdminPanel() {
+  const { user, profile } = useAuth()
+  const router = useRouter()
+  const [currentView, setCurrentView] = useState('dashboard')
+
+  // Vérification des droits d'admin
+  useEffect(() => {
+    if (!user) {
+      router.push('/connexion')
+      return
+    }
+    
+    // Vérifier si l'utilisateur est admin (vous pouvez adapter cette logique)
+    if (!profile?.admin && user?.email !== 'israelokito88@gmail.com') {
+      toast.error('Accès non autorisé')
+      router.push('/')
+      return
+    }
+  }, [user, profile, router])
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Vérification des autorisations...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile?.admin && user?.email !== 'israelokito88@gmail.com') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès Refusé</h2>
+          <p className="text-gray-600 mb-4">Vous n'avez pas les droits d'accès à cette page.</p>
+          <Button onClick={() => router.push('/')}>
+            Retour à l'accueil
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header Admin */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <Shield className="w-8 h-8 text-blue-600" />
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Administration</h1>
+                <p className="text-sm text-gray-600 hidden sm:block">Okit-Boost Panel</p>
+              </div>
+            </div>
+            
+            {/* Navigation Tabs - Responsive */}
+            <div className="hidden md:flex items-center space-x-4">
+              <Button
+                variant={currentView === 'dashboard' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('dashboard')}
+                className="flex items-center space-x-2"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Dashboard</span>
+              </Button>
+              <Button
+                variant={currentView === 'orders' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('orders')}
+                className="flex items-center space-x-2"
+              >
+                <Package className="w-4 h-4" />
+                <span>Commandes</span>
+              </Button>
+              <Button
+                variant={currentView === 'settings' ? 'default' : 'ghost'}
+                onClick={() => setCurrentView('settings')}
+                className="flex items-center space-x-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Paramètres</span>
+              </Button>
+            </div>
+
+            {/* Mobile Menu */}
+            <div className="md:hidden">
+              <Select value={currentView} onValueChange={setCurrentView}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dashboard">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>Dashboard</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="orders">
+                    <div className="flex items-center space-x-2">
+                      <Package className="w-4 h-4" />
+                      <span>Commandes</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="settings">
+                    <div className="flex items-center space-x-2">
+                      <Settings className="w-4 h-4" />
+                      <span>Paramètres</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Contenu principal */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {currentView === 'dashboard' && <Dashboard />}
+        {currentView === 'orders' && <LegacyOrdersView />}
+        {currentView === 'settings' && <AdminSettings />}
+      </div>
+    </div>
+  )
+}
+
+// Composant pour les paramètres admin
+function AdminSettings() {
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Paramètres du système</CardTitle>
+          <CardDescription>Configuration de la plateforme</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Mode maintenance</h4>
+                <p className="text-sm text-gray-600">Activer/désactiver la maintenance</p>
+              </div>
+              <Button variant="outline" size="sm">
+                Configurer
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Notifications</h4>
+                <p className="text-sm text-gray-600">Gérer les notifications système</p>
+              </div>
+              <Button variant="outline" size="sm">
+                Configurer
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// Vue legacy des commandes (conserver la logique existante)
+function LegacyOrdersView() {
   const [stats, setStats] = useState(null)
   const [orders, setOrders] = useState([])
   const [trials, setTrials] = useState([])
@@ -342,7 +514,7 @@ export default function AdminPanel() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-8">
         {loading ? (
           <>
             <StatsCardSkeleton />
@@ -354,11 +526,11 @@ export default function AdminPanel() {
           <>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Commandes totales</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Commandes</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalOrders}</div>
+                <div className="text-lg sm:text-2xl font-bold">{stats.totalOrders}</div>
                 <p className="text-xs text-muted-foreground">
                   +{stats.pendingOrders} en attente
                 </p>
@@ -367,41 +539,42 @@ export default function AdminPanel() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Utilisateurs</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Utilisateurs</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                <div className="text-lg sm:text-2xl font-bold">{stats.totalUsers}</div>
                 <p className="text-xs text-muted-foreground">
-                  Clients enregistrés
+                  Clients
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenus (CDF)</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Revenus</CardTitle>
                 <DollarSign className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats.totalRevenueCDF.toLocaleString()} CDF
+                <div className="text-sm sm:text-lg font-bold">
+                  {stats.totalRevenueCDF.toLocaleString()} 
+                  <span className="text-xs ml-1">CDF</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Commandes terminées
+                  Terminées
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Essais gratuits</CardTitle>
+                <CardTitle className="text-xs sm:text-sm font-medium">Essais</CardTitle>
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.trialRequests}</div>
+                <div className="text-lg sm:text-2xl font-bold">{stats.trialRequests}</div>
                 <p className="text-xs text-muted-foreground">
-                  Demandes en attente
+                  En attente
                 </p>
               </CardContent>
             </Card>

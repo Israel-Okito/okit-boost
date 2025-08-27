@@ -1,62 +1,38 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { withPerformanceOptimization } from '@/lib/performance/performanceMiddleware'
+import { cachedPlatforms } from '@/lib/performance/cache'
 
-export async function GET() {
+async function handleGetPlatforms() {
   try {
     const supabase = await createClient()
 
-    // Récupérer les plateformes avec le nombre de services
-    const { data: platforms, error } = await supabase
-      .from('platforms')
-      .select(`
-        *,
-        services!inner(count)
-      `)
-      .eq('is_active', true)
-      .order('name')
-
-    if (error) {
-      console.error('Platforms fetch error:', error)
-      throw error
-    }
-
-    // Récupérer le prix minimum pour chaque plateforme
-    const platformsWithStats = await Promise.all(
-      platforms.map(async (platform) => {
-        // Compter les services
-        const { count: servicesCount } = await supabase
-          .from('services')
-          .select('*', { count: 'exact', head: true })
-          .eq('platform_id', platform.id)
-          .eq('is_active', true)
-
-        // Récupérer le prix minimum
-        const { data: minPriceService } = await supabase
-          .from('services')
-          .select('price_cdf')
-          .eq('platform_id', platform.id)
-          .eq('is_active', true)
-          .order('price_cdf', { ascending: true })
-          .limit(1)
-          .single()
-
-        return {
-          ...platform,
-          services_count: servicesCount || 0,
-          min_price: minPriceService?.price_cdf || null
-        }
-      })
-    )
+    // Utiliser le cache optimisé pour les plateformes avec stats
+    const platformsWithStats = await cachedPlatforms.getWithStats(supabase)
 
     return NextResponse.json({
-      platforms: platformsWithStats || []
+      success: true,
+      platforms: platformsWithStats || [],
+      cached: true,
+      timestamp: new Date().toISOString()
     })
 
   } catch (error) {
     console.error('API Platforms error:', error)
     return NextResponse.json(
-      { error: 'Erreur lors de la récupération des plateformes' },
+      { 
+        success: false,
+        error: 'Erreur lors de la récupération des plateformes',
+        code: 'PLATFORMS_FETCH_ERROR'
+      },
       { status: 500 }
     )
   }
 }
+
+// Exporter avec optimisation des performances
+export const GET = withPerformanceOptimization(handleGetPlatforms, {
+  enableCache: true,
+  cacheTTL: 600000, // 10 minutes
+  enableMetrics: true
+})

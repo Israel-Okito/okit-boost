@@ -25,19 +25,24 @@ import {
 import { toast } from "sonner"
 import { useAuth } from "@/lib/hooks/useAuth"
 
-export function CinetPayPayment({ order, onSuccess, onError }) {
+export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
   const router = useRouter()
   const { user } = useAuth()
   
   const [loading, setLoading] = useState(false)
   const [selectedMethod, setSelectedMethod] = useState('')
   const [customerData, setCustomerData] = useState({
-    name: order?.customer_name || '',
-    email: order?.customer_email || '',
-    phone: order?.customer_phone || ''
+    name: '',
+    email: user?.email || '',
+    phone: ''
   })
   const [validationErrors, setValidationErrors] = useState({})
   const [paymentStep, setPaymentStep] = useState('method') // method, details, processing
+  
+  // Calculer les totaux
+  const totalUSD = cartItems.reduce((sum, item) => sum + (item.total_usd || 0), 0)
+  const totalCDF = cartItems.reduce((sum, item) => sum + (item.total_cdf || 0), 0)
+  const displayAmount = currency === 'USD' ? totalUSD : totalCDF
 
   // Méthodes de paiement disponibles pour la RDC
   const paymentMethods = [
@@ -128,12 +133,14 @@ export function CinetPayPayment({ order, onSuccess, onError }) {
       setPaymentStep('processing')
 
       console.log('Initiation du paiement CinetPay...')
-      console.log('Données commande:', order)
+      console.log('Items panier:', cartItems)
+      console.log('Devise:', currency)
       console.log('Méthode sélectionnée:', selectedMethod)
       console.log('Données client:', customerData)
 
       const paymentData = {
-        orderId: order.id,
+        cartItems: cartItems,
+        currency: currency,
         paymentMethod: selectedMethod,
         customerData: {
           ...customerData,
@@ -150,8 +157,8 @@ export function CinetPayPayment({ order, onSuccess, onError }) {
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
+      
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Erreur lors de la création du paiement')
       }
 
@@ -164,10 +171,10 @@ export function CinetPayPayment({ order, onSuccess, onError }) {
         // Sauvegarder les informations de transaction dans le localStorage pour le retour
         localStorage.setItem('cinetpay_transaction', JSON.stringify({
           transactionId: data.transactionId,
-          orderNumber: data.orderNumber,
           amount: data.amount,
           currency: data.currency,
           paymentMethod: selectedMethod,
+          items: cartItems.length,
           timestamp: new Date().toISOString()
         }))
 
@@ -235,16 +242,28 @@ export function CinetPayPayment({ order, onSuccess, onError }) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-between items-center">
-            <span>Commande #{order?.order_number}</span>
-            <Badge variant="outline">{order?.order_items?.length || 0} service(s)</Badge>
+            <span>Services sélectionnés</span>
+            <Badge variant="outline">{cartItems?.length || 0} service(s)</Badge>
           </div>
+          <Separator />
+          
+          {/* Affichage des items */}
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {cartItems.map((item, index) => (
+              <div key={index} className="flex justify-between text-sm">
+                <span className="truncate">{item.service_name}</span>
+                <span>{item.quantity.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+          
           <Separator />
           <div className="flex justify-between items-center text-lg font-semibold">
             <span>Total à payer</span>
             <span>
-              {order?.currency === 'USD' 
-                ? `$${order?.total_usd?.toFixed(2)}` 
-                : `${order?.total_cdf?.toLocaleString()} CDF`
+              {currency === 'USD' 
+                ? `$${totalUSD.toFixed(2)}` 
+                : `${totalCDF.toLocaleString()} CDF`
               }
             </span>
           </div>
