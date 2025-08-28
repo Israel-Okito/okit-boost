@@ -187,7 +187,7 @@ export function validateConfig() {
 }
 
 // Configuration par défaut exportée
-export default {
+const config = {
   ENV,
   URLS,
   SUPABASE,
@@ -206,3 +206,5 @@ export default {
   TIMEOUTS,
   validateConfig
 }
+
+export default config

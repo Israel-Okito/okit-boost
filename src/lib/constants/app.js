@@ -210,7 +210,7 @@ export const NOTIFICATION_DURATION = {
   PERSISTENT: 0
 }
 
-export default {
+const constants = {
   ORDER_STATUS,
   PAYMENT_STATUS,
   PAYMENT_PROVIDERS,
@@ -233,3 +233,5 @@ export default {
   NOTIFICATION_TYPES,
   NOTIFICATION_DURATION
 }
+
+export default constants

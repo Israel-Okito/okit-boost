@@ -423,7 +423,7 @@ export function uniqueBy(array, key) {
   })
 }
 
-export default {
+const utils = {
   formatCurrency,
   convertCurrency,
   formatDate,
@@ -452,3 +452,5 @@ export default {
   groupBy,
   uniqueBy
 }
+
+export default utils

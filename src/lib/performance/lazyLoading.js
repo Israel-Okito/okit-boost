@@ -1,6 +1,7 @@
 // Système de lazy loading et optimisation des composants
 import { Suspense, lazy, memo, useMemo, useCallback, useState, useEffect } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
+import Image from 'next/image'
 
 /**
  * HOC pour le lazy loading de composants
@@ -231,7 +232,7 @@ export const LazyImage = memo(function LazyImage({
     <div ref={imgRef} className={`relative ${className}`}>
       {inView && (
         <>
-          <img
+          <Image
             src={src}
             alt={alt}
             onLoad={handleLoad}
