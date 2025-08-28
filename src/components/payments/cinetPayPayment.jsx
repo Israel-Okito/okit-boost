@@ -22,6 +22,8 @@ import {
   ArrowRight,
   Lock
 } from "lucide-react"
+import { MPesaIcon, OrangeMoneyIcon, AirtelMoneyIcon } from "@/components/icons/MPesaIcon"
+import { PaymentInstructions } from "@/components/payments/PaymentInstructions"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/hooks/useAuth"
 
@@ -49,7 +51,7 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
     {
       id: 'orange',
       name: 'Orange Money',
-      icon: '🟠',
+      icon: <OrangeMoneyIcon className="w-8 h-8" />,
       description: 'Paiement via Orange Money RDC',
       fees: 'Frais: 1.5%',
       available: true
@@ -57,9 +59,17 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
     {
       id: 'airtel',
       name: 'Airtel Money',
-      icon: '🔴',
+      icon: <AirtelMoneyIcon className="w-8 h-8" />,
       description: 'Paiement via Airtel Money RDC',
       fees: 'Frais: 1.5%',
+      available: true
+    },
+    {
+      id: 'mpesa',
+      name: 'M-Pesa',
+      icon: <MPesaIcon className="w-8 h-8" />,
+      description: 'Paiement via M-Pesa RDC',
+      fees: 'Frais: 1.8%',
       available: true
     },
    
@@ -298,8 +308,8 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
                   className={selectedMethod === method.id ? 'border-blue-500' : ''}
                 />
                 <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl">{method.icon}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0">{method.icon}</div>
                     <div>
                       <Label htmlFor={method.id} className="font-medium cursor-pointer">
                         {method.name}
@@ -399,9 +409,20 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
               <li>Vous serez automatiquement redirigé après le paiement</li>
               <li>Votre commande sera traitée immédiatement après confirmation</li>
             </ol>
+
+            {/* <PaymentInstructions 
+method={selectedMethod} 
+amount={displayAmount} 
+currency={currency} 
+/> */}
           </AlertDescription>
         </Alert>
+
+
       )}
+
+      
+   
 
       {/* Bouton de paiement */}
       <div className="space-y-4">

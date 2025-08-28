@@ -416,7 +416,7 @@ getOptimizedChannels(requestedChannels, country = "CD") {
   if (!requestedChannels) {
     // Défaut par pays
     if (country === "CD") {
-      return "ORANGE_MONEY_CD,AIRTEL_MONEY_CD";
+      return "ORANGE_MONEY_CD,AIRTEL_MONEY_CD,MPESA_CD";
     }
     return "ALL";
   }
@@ -435,6 +435,7 @@ getOptimizedChannels(requestedChannels, country = "CD") {
   const CHANNELS_MAP = {
     orange: "ORANGE_MONEY_CD",
     airtel: "AIRTEL_MONEY_CD",
+    mpesa: "MPESA_CD",
     visa: "VISA",
     mastercard: "MASTERCARD",
   };

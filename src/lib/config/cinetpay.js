@@ -27,7 +27,9 @@ export const baseCinetpayConfig = {
       AIRTEL_MONEY: 'AIRTEL_MONEY',
       // Pour la RDC
       ORANGE_MONEY_CD: 'ORANGE_MONEY_CD',
-      AIRTEL_MONEY_CD: 'AIRTEL_MONEY_CD'
+      AIRTEL_MONEY_CD: 'AIRTEL_MONEY_CD',
+      MPESA: 'MPESA',
+      MPESA_CD: 'MPESA_CD'
     },
   
     // Statuts des transactions
