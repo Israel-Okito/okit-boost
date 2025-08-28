@@ -49,7 +49,7 @@ export default function Cancel() {
             </Button>
 
             <Button variant="outline" asChild className="w-full">
-              <a href="mailto:support@okit-boost.com">
+              <a href="mailto:okitdevservice@gmail.com">
                 <MessageCircle className="w-4 h-4 mr-2" />
                 Contacter le support
               </a>

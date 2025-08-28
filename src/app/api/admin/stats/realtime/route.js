@@ -35,10 +35,10 @@ export async function GET(request) {
       )
     }
 
-    await logger.info('Realtime stats requested', {
-      requestId,
-      userId: user.id
-    })
+    // await logger.info('Realtime stats requested', {
+    //   requestId,
+    //   userId: user.id
+    // }) // Désactivé pour performance
 
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
@@ -163,11 +163,11 @@ export async function GET(request) {
       })
     }
 
-    // Services externes status (mock - à adapter selon vos besoins)
+    // Services externes status - désactivé pour performance
     const externalServices = {
-      supabase: 'operational',
-      cinetpay: 'operational', // Vous pouvez faire un ping réel
-      email: 'operational'
+      // supabase: 'operational',
+      // cinetpay: 'operational',
+      // email: 'operational'
     }
 
     const data = {
@@ -197,12 +197,12 @@ export async function GET(request) {
           return acc
         }, {}),
         
-        // Performance
-        performance: {
-          databaseQueries: Math.round(Math.random() * 50 + 20),
-          cacheHitRate: Math.round(Math.random() * 20 + 80),
-          memoryUsage: Math.round(Math.random() * 30 + 40)
-        }
+        // Performance - désactivé pour optimisation
+        // performance: {
+        //   databaseQueries: Math.round(Math.random() * 50 + 20),
+        //   cacheHitRate: Math.round(Math.random() * 20 + 80),
+        //   memoryUsage: Math.round(Math.random() * 30 + 40)
+        // }
       }
     }
 

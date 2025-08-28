@@ -19,7 +19,7 @@ export default function Footer() {
               <a href="https://wa.me/243900554141" className="text-gray-400 hover:text-white transition-colors">
                 WhatsApp
               </a>
-              <a href="mailto:contact@okit-boost.com" className="text-gray-400 hover:text-white transition-colors">
+              <a href="mailto:okitdevservice@gmail.com" className="text-gray-400 hover:text-white transition-colors">
                 Email
               </a>
             </div>

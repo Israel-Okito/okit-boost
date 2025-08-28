@@ -296,8 +296,10 @@ function logSecurityEvent(event) {
     ip_hash: event.ip !== 'unknown' ? hashIP(event.ip) : 'unknown'
   }
   
-  // En production, envoyer à un service de logging
-  console.log('SECURITY_LOG:', JSON.stringify(logEntry))
+  // En production, envoyer à un service de logging - Réduit pour performance
+  if (process.env.NODE_ENV !== 'production' || event.type === 'BLOCKED' || event.type === 'SUSPICIOUS') {
+    console.log('SECURITY_LOG:', JSON.stringify(logEntry))
+  }
 }
 
 /**

@@ -40,13 +40,13 @@ export async function GET(request) {
     const type = searchParams.get('type') // 'order', 'payment', 'user', 'error'
     const timeRange = searchParams.get('timeRange') || '24h'
 
-    await logger.info('Recent activity requested', {
-      requestId,
-      userId: user.id,
-      limit,
-      type,
-      timeRange
-    })
+    // await logger.info('Recent activity requested', {
+    //   requestId,
+    //   userId: user.id,
+    //   limit,
+    //   type,
+    //   timeRange
+    // }) // Désactivé pour performance
 
     // Calcul de la date de début selon le range
     const now = new Date()

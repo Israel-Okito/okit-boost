@@ -77,7 +77,7 @@ export const EMAIL = {
   SMTP_PORT: parseInt(process.env.SMTP_PORT) || 587,
   SMTP_USER: process.env.SMTP_USER,
   SMTP_PASS: process.env.SMTP_PASS,
-  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@okit-boost.com',
+  FROM_EMAIL: process.env.FROM_EMAIL || 'okitdevservice@gmail.com',
   FROM_NAME: process.env.FROM_NAME || 'Okit Boost'
 }
 

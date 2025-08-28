@@ -73,12 +73,12 @@ export class RetrySystem {
     let lastError;
     let attempts = 0;
 
-    // Log du début
-    await logger.debug(`Retry operation started: ${this.name}`, {
-      attemptId,
-      maxAttempts: this.config.maxAttempts,
-      strategy: this.config.strategy
-    });
+    // Log du début - désactivé pour performance
+    // await logger.debug(`Retry operation started: ${this.name}`, {
+    //   attemptId,
+    //   maxAttempts: this.config.maxAttempts,
+    //   strategy: this.config.strategy
+    // });
 
     for (attempts = 1; attempts <= this.config.maxAttempts; attempts++) {
       try {
@@ -97,15 +97,15 @@ export class RetrySystem {
         // Mise à jour adaptative
         this.updateAdaptiveState(true, responseTime);
         
-        // Log du succès
-        const totalTime = Date.now() - startTime;
-        await logger.info(`Retry operation succeeded: ${this.name}`, {
-          attemptId,
-          attempts,
-          totalTime,
-          responseTime,
-          successAfterRetry: attempts > 1
-        });
+        // Log du succès - désactivé pour performance
+        // const totalTime = Date.now() - startTime;
+        // await logger.info(`Retry operation succeeded: ${this.name}`, {
+        //   attemptId,
+        //   attempts,
+        //   totalTime,
+        //   responseTime,
+        //   successAfterRetry: attempts > 1
+        // });
 
         return result;
         

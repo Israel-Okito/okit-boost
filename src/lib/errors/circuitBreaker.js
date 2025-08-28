@@ -54,13 +54,13 @@ export class CircuitBreaker {
       uptime: Date.now()
     };
 
-    // Démarrer le monitoring
-    this.startMonitoring();
+    // Démarrer le monitoring - désactivé pour performance
+    // this.startMonitoring();
     
-    logger.info(`Circuit breaker created: ${this.name}`, {
-      config: this.config,
-      initialState: this.state
-    });
+    // logger.info(`Circuit breaker created: ${this.name}`, {
+    //   config: this.config,
+    //   initialState: this.state
+    // }); // Désactivé pour performance
   }
 
   /**
@@ -342,43 +342,45 @@ export class CircuitBreaker {
   }
 
   /**
-   * Démarre le monitoring périodique
+   * Démarre le monitoring périodique - DÉSACTIVÉ pour performance
    */
   startMonitoring() {
-    setInterval(() => {
-      this.collectMetrics();
-      this.resetPeriodCounters();
-    }, this.config.monitoringPeriod);
+    // Monitoring désactivé pour optimiser les performances
+    // setInterval(() => {
+    //   this.collectMetrics();
+    //   this.resetPeriodCounters();
+    // }, this.config.monitoringPeriod);
   }
 
   /**
-   * Collecte les métriques
+   * Collecte les métriques - DÉSACTIVÉ pour performance
    */
   collectMetrics() {
-    const now = Date.now();
-    const uptime = now - this.metrics.uptime;
+    // Métriques complètement désactivées pour optimiser les performances
+    return;
     
-    const metrics = {
-      ...this.metrics,
-      state: this.state,
-      uptime,
-      currentFailures: this.failures,
-      currentSuccesses: this.successes,
-      currentTotalCalls: this.totalCalls,
-      failureRate: this.totalCalls > 0 ? (this.failures / this.totalCalls) : 0,
-      timeSinceLastStateChange: now - this.lastStateChange
-    };
+    // const now = Date.now();
+    // const uptime = now - this.metrics.uptime;
+    
+    // const metrics = {
+    //   ...this.metrics,
+    //   state: this.state,
+    //   uptime,
+    //   currentFailures: this.failures,
+    //   currentSuccesses: this.successes,
+    //   currentTotalCalls: this.totalCalls,
+    //   failureRate: this.totalCalls > 0 ? (this.failures / this.totalCalls) : 0,
+    //   timeSinceLastStateChange: now - this.lastStateChange
+    // };
 
-    logger.debug(`Circuit breaker metrics: ${this.name}`, metrics);
-    
-    // Alertes si nécessaire
-    if (this.state === CIRCUIT_STATES.OPEN && 
-        now - this.lastStateChange > this.config.recoveryTimeout * 2) {
-      logger.warn(`Circuit breaker stuck OPEN: ${this.name}`, {
-        timeSinceOpen: now - this.lastStateChange,
-        recoveryTimeout: this.config.recoveryTimeout
-      });
-    }
+    // // Alertes si nécessaire
+    // if (this.state === CIRCUIT_STATES.OPEN && 
+    //     now - this.lastStateChange > this.config.recoveryTimeout * 2) {
+    //   logger.warn(`Circuit breaker stuck OPEN: ${this.name}`, {
+    //     timeSinceOpen: now - this.lastStateChange,
+    //     recoveryTimeout: this.config.recoveryTimeout
+    //   });
+    // }
   }
 
   /**

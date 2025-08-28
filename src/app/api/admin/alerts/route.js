@@ -36,10 +36,10 @@ export async function GET(request) {
       )
     }
 
-    await logger.info('System alerts requested', {
-      requestId,
-      userId: user.id
-    })
+    // await logger.info('System alerts requested', {
+    //   requestId,
+    //   userId: user.id
+    // }) // Désactivé pour performance
 
     const now = new Date()
     const alerts = []

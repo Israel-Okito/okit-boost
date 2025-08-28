@@ -484,7 +484,7 @@ export default function ConditionsPage() {
                     WhatsApp
                   </Button>
                 </a>
-                <a href="mailto:legal@okit-boost.com?subject=Question sur les Conditions d'Utilisation">
+                <a href="mailto:okitdevservice@gmail.com?subject=Question sur les Conditions d'Utilisation">
                   <Button variant="outline" className="bg-transparent">
                     <Mail className="w-4 h-4 mr-2" />
                     Email Juridique

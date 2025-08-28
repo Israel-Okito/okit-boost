@@ -298,8 +298,8 @@ async function handlePaymentAccepted(supabase, transaction, webhookData) {
       platform_name: item.platform_id,
       target_link: item.target_link,
       quantity: item.quantity,
-      unit_price_usd: item.price_usd,
-      unit_price_cdf: item.price_cdf,
+      price_usd: item.price_usd,
+      price_cdf: item.price_cdf,
       total_usd: item.total_usd,
       total_cdf: item.total_cdf
     }))

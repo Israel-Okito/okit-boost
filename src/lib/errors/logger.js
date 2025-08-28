@@ -277,11 +277,15 @@ export class StructuredLogger {
   }
 
   async info(message, metadata = {}) {
-    await this.write(LOG_LEVELS.INFO, message, metadata, 'combined');
+    // Désactivé en développement pour optimiser les performances
+    if (process.env.NODE_ENV === 'production') {
+      await this.write(LOG_LEVELS.INFO, message, metadata, 'combined');
+    }
   }
 
   async debug(message, metadata = {}) {
-    await this.write(LOG_LEVELS.DEBUG, message, metadata, 'combined');
+    // Debug complètement désactivé pour performance
+    return;
   }
 
   async trace(message, metadata = {}) {

@@ -96,7 +96,7 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 mb-2">contact@okit-boost.com</div>
+                  <div className="text-2xl font-bold text-blue-600 mb-2">okitdevservice@gmail.com</div>
                   <p className="text-gray-600 mb-6">Cliquez pour ouvrir votre client email</p>
                 </div>
 
@@ -116,7 +116,7 @@ export default function ContactPage() {
                 </div>
 
                 <a
-                  href="mailto:contact@okit-boost.com?subject=Demande d'information - Services SMM&body=Bonjour Okit-Boost,%0D%0A%0D%0AJ'aimerais avoir des informations sur vos services SMM.%0D%0A%0D%0AMes besoins:%0D%0A- Plateforme: %0D%0A- Service souhaité: %0D%0A- Budget approximatif: %0D%0A%0D%0AMerci pour votre retour.%0D%0A%0D%0ACordialement"
+                  href="mailto:okitdevservice@gmail.com?subject=Demande d'information - Services SMM&body=Bonjour Okit-Boost,%0D%0A%0D%0AJ'aimerais avoir des informations sur vos services SMM.%0D%0A%0D%0AMes besoins:%0D%0A- Plateforme: %0D%0A- Service souhaité: %0D%0A- Budget approximatif: %0D%0A%0D%0AMerci pour votre retour.%0D%0A%0D%0ACordialement"
                   className="block"
                 >
                   <Button className="w-full bg-blue-500 hover:bg-blue-600 text-white h-12 text-lg">

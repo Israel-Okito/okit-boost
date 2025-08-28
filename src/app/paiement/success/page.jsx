@@ -407,7 +407,7 @@ export default function PaymentSuccessPage() {
               
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button variant="outline" asChild>
-                  <a href="mailto:support@okit-boost.com">
+                  <a href="mailto:okitdevservice@gmail.com">
                     <Mail className="w-4 h-4 mr-2" />
                     Email support
                   </a>

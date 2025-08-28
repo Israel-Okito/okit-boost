@@ -54,7 +54,7 @@ const Dashboard = () => {
   const [realtimeData, setRealtimeData] = useState(null)
   const [recentActivity, setRecentActivity] = useState([])
   const [loading, setLoading] = useState(true)
-  const [autoRefresh, setAutoRefresh] = useState(true)
+  const [autoRefresh, setAutoRefresh] = useState(false) // Désactivé pour optimiser les performances
   const [selectedPeriod, setSelectedPeriod] = useState('7d')
   const [alerts, setAlerts] = useState([])
 
