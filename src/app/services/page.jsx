@@ -22,7 +22,9 @@ import {
   Shield,
   Zap,
   Info,
-  ArrowRight
+  ArrowRight,
+  AlertTriangle,
+  CheckCircle
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -155,23 +157,22 @@ function ServiceRow({ service, index, onAddToCart, onViewDetails }) {
               <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
               {service.delivery_time || '24-48h'}
             </span>
-            {service.refill_enabled && (
+            {/* {service.refill_enabled && (
               <span className="flex items-center">
                 <Shield className="w-3 h-3 mr-1" />
                 Refill {service.refill_days || '30'}j
               </span>
-            )}
+            )} */}
           </div>
 
           <div className="flex space-x-2">
             <Button
               size="sm"
-              variant="outline"
               onClick={() => setShowForm(!showForm)}
-              className="text-xs"
+              className="text-xs bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200"
             >
               <ShoppingCart className="w-3 h-3 mr-1" />
-              Commander
+              {showForm ? 'Annuler' : 'Commander'}
             </Button>
             <Button
               size="sm"
@@ -225,66 +226,126 @@ function ServiceRow({ service, index, onAddToCart, onViewDetails }) {
         </div>
       </div>
 
-      {/* Order Form */}
+      {/* Order Form - Responsive pour Mobile et Desktop */}
       {showForm && (
-        <div className="col-span-12 bg-blue-50 border-l-4 border-blue-400 p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Lien cible *
-              </label>
-              <Input
-                placeholder={`https://www.${service.platform_id || 'social'}.com/username`}
-                value={targetLink}
-                onChange={(e) => {
-                  const value = e.target.value
-                  setTargetLink(value)
-                  
-                  // Validation en temps réel
-                  if (value.trim()) {
-                    const validation = validateURL(value)
-                    setUrlError(validation.valid ? '' : validation.message)
-                  } else {
-                    setUrlError('')
-                  }
-                }}
-                className={`text-sm ${urlError ? 'border-red-500' : targetLink && !urlError ? 'border-green-500' : ''}`}
-              />
-              {urlError && (
-                <p className="text-xs text-red-500 mt-1">{urlError}</p>
-              )}
-              {targetLink && !urlError && (
-                <p className="text-xs text-green-600 mt-1">✓ URL valide</p>
-              )}
+        <div className="lg:col-span-12 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 border-blue-400 p-4 sm:p-6 rounded-r-lg shadow-sm">
+          <div className="space-y-4">
+            {/* Titre du formulaire */}
+            <div className="flex items-center space-x-2 mb-4">
+              <ShoppingCart className="w-5 h-5 text-blue-600" />
+              <h3 className="text-lg font-semibold text-gray-900">Passer commande</h3>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantité: {quantity.toLocaleString()}
-              </label>
-              <Input
-                type="number"
-                min={service.min_quantity || 1}
-                max={service.max_quantity || 1000000}
-                value={quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                className="text-sm"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Lien cible */}
+              <div className="md:col-span-2 lg:col-span-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="flex items-center space-x-1">
+                    <span>Lien cible</span>
+                    <span className="text-red-500">*</span>
+                  </span>
+                </label>
+                <Input
+                  placeholder={`https://www.${service.platform_id || 'social'}.com/username`}
+                  value={targetLink}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    setTargetLink(value)
+                    
+                    // Validation en temps réel
+                    if (value.trim()) {
+                      const validation = validateURL(value)
+                      setUrlError(validation.valid ? '' : validation.message)
+                    } else {
+                      setUrlError('')
+                    }
+                  }}
+                  className={`text-sm transition-all duration-200 ${
+                    urlError ? 'border-red-500 focus:border-red-500 focus:ring-red-200' : 
+                    targetLink && !urlError ? 'border-green-500 focus:border-green-500 focus:ring-green-200' : 
+                    'focus:border-blue-500 focus:ring-blue-200'
+                  }`}
+                />
+                {urlError && (
+                  <div className="flex items-center space-x-1 mt-2">
+                    <AlertTriangle className="w-3 h-3 text-red-500" />
+                    <p className="text-xs text-red-500">{urlError}</p>
+                  </div>
+                )}
+                {targetLink && !urlError && (
+                  <div className="flex items-center space-x-1 mt-2">
+                    <CheckCircle className="w-3 h-3 text-green-500" />
+                    <p className="text-xs text-green-600">URL valide</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Quantité */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <span className="flex items-center justify-between">
+                    <span>Quantité</span>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {quantity.toLocaleString()}
+                    </span>
+                  </span>
+                </label>
+                <Input
+                  type="number"
+                  min={service.min_quantity || 1}
+                  max={service.max_quantity || 1000000}
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  className="text-sm focus:border-blue-500 focus:ring-blue-200"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Min: {(service.min_quantity || 1).toLocaleString()} • 
+                  Max: {(service.max_quantity || 1000000).toLocaleString()}
+                </p>
+              </div>
 
-            <div className="flex items-end space-x-2">
-              <div className="flex-1">
-                <div className="text-sm font-medium text-gray-700 mb-1">
-                  Total: {((service.price_cdf || 0) * quantity).toLocaleString()} CDF
+              {/* Total et bouton */}
+              <div className="flex flex-col justify-end">
+                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="text-center space-y-2">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide">Total</div>
+                    <div className="text-xl font-bold text-blue-600">
+                      {((service.price_cdf || 0) * quantity).toLocaleString()} CDF
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      ≈ ${((service.price_usd || 0) * quantity).toFixed(2)}
+                    </div>
+                  </div>
                 </div>
                 <Button
                   onClick={handleAddToCart}
-                  disabled={!targetLink.trim()}
-                  className="w-full"
+                  disabled={!targetLink.trim() || !!urlError}
+                  className="w-full mt-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-2.5 transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:opacity-50"
                   size="sm"
                 >
+                  <ShoppingCart className="w-4 h-4 mr-2" />
                   Ajouter au panier
                 </Button>
+              </div>
+            </div>
+            
+            {/* Informations service */}
+            <div className="border-t border-blue-200 pt-4 mt-4">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
+                <div className="flex items-center space-x-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{service.delivery_time || '24-48h'}</span>
+                </div>
+                {/* {service.refill_enabled && (
+                  <div className="flex items-center space-x-1">
+                    <Shield className="w-3 h-3" />
+                    <span>Refill {service.refill_days || 30}j</span>
+                  </div>
+                )} */}
+                <div className="flex items-center space-x-1">
+                  <Star className="w-3 h-3 text-yellow-500" />
+                  <span>Service premium</span>
+                </div>
               </div>
             </div>
           </div>
@@ -338,12 +399,12 @@ function ServiceRow({ service, index, onAddToCart, onViewDetails }) {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-xs text-gray-500">
-              {service.refill_enabled && (
+              {/* {service.refill_enabled && (
                 <span className="flex items-center">
                   <Shield className="w-3 h-3 mr-1" />
                   Remplissage
                 </span>
-              )}
+              )} */}
               <span className="flex items-center">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
                 Actif
@@ -352,58 +413,14 @@ function ServiceRow({ service, index, onAddToCart, onViewDetails }) {
             <Button
               size="sm"
               onClick={() => setShowForm(!showForm)}
-              className="text-xs px-3 py-1"
+              className="text-xs px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200"
             >
+              <ShoppingCart className="w-3 h-3 mr-1" />
               {showForm ? 'Annuler' : 'Commander'}
             </Button>
           </div>
 
-          {/* Mobile Order Form */}
-          {showForm && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Lien cible *
-                  </label>
-                  <Input
-                    placeholder={`Lien de votre ${service.platform_id || 'profil'}`}
-                    value={targetLink}
-                    onChange={(e) => setTargetLink(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Quantité
-                  </label>
-                  <Input
-                    type="number"
-                    min={service.min_quantity || 100}
-                    max={service.max_quantity || 10000}
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value))}
-                    className="text-sm"
-                  />
-                </div>
-                <div className="flex items-center justify-between pt-2">
-                  <div className="text-xs text-gray-600">
-                    Total: <span className="font-semibold text-blue-600">
-                      {service.price_cdf ? `${((service.price_cdf * quantity) / 1000).toLocaleString()} FC` : 'Sur devis'}
-                    </span>
-                  </div>
-                  <Button
-                    size="sm"
-                    onClick={handleAddToCart}
-                    disabled={!targetLink}
-                    className="text-xs px-4"
-                  >
-                    Ajouter au panier
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+
         </CardContent>
       </Card>
     </>
@@ -542,59 +559,49 @@ export default function ServicesPage() {
     fetchData()
   }, [])
 
-  const fetchPlatforms = useCallback(async () => {
-    const response = await fetch('/api/services', {
-      headers: {
-        'Cache-Control': 'max-age=600' // Cache 10 minutes
-      }
-    })
-    const data = await response.json()
-    return data.platforms || []
-  }, [])
-
-  const fetchServicesForPlatform = useCallback(async (platformId) => {
-    const response = await fetch(`/api/services/${platformId}`, {
-      headers: {
-        'Cache-Control': 'max-age=300' // Cache 5 minutes
-      }
-    })
-    const data = await response.json()
-    return data.services || []
-  }, [])
-
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       
-      // Fetch platforms avec cache
-      const platformsData = await fetchPlatforms()
-      setPlatforms(platformsData)
-      
-      // Fetch services en parallèle avec optimisation
-      const servicePromises = platformsData.map(async (platform) => {
-        try {
-          const services = await fetchServicesForPlatform(platform.id)
-          return services.map(service => ({
-            ...service,
-            platform_id: platform.id,
-            platform_name: platform.name
-          }))
-        } catch (error) {
-          console.error(`Error fetching services for ${platform.name}:`, error)
-          return []
+      // Récupérer tous les services et plateformes en une seule requête optimisée
+      const response = await fetch('/api/services', {
+        headers: {
+          'Cache-Control': 'max-age=300' // Cache 5 minutes
         }
       })
       
-      const allServicesArrays = await Promise.all(servicePromises)
-      const allServices = allServicesArrays.flat()
-      setServices(allServices)
+      if (response.ok) {
+        const data = await response.json()
+        setPlatforms(data.platforms || [])
+        
+        // Convertir servicesByPlatform en array plat
+        const allServices = []
+        Object.values(data.servicesByPlatform || {}).forEach(({ platform, services }) => {
+          services.forEach(service => {
+            allServices.push({
+              ...service,
+              platform_name: platform.name
+            })
+          })
+        })
+        
+        setServices(allServices)
+        
+        if (data.cached) {
+          console.log('✅ Services chargés depuis le cache:', data.totalServices, 'services')
+        }
+      } else {
+        console.error('Erreur API services:', response.status)
+        toast.error('Erreur lors du chargement des services')
+      }
       
     } catch (error) {
       console.error('Error fetching data:', error)
+      toast.error('Erreur lors du chargement des services')
     } finally {
       setLoading(false)
     }
-  }, [fetchPlatforms, fetchServicesForPlatform])
+  }, [])
 
   const handleAddToCart = (item) => {
     if (!user) {
@@ -605,8 +612,8 @@ export default function ServicesPage() {
   }
 
   const handleViewDetails = (service) => {
-    // TODO: Open service details modal
-    console.log('View details for:', service)
+    // Ouvrir modal de détails du service (à implémenter)
+    toast.info('Fonctionnalité de détails à venir')
   }
 
   const groupedServices = useMemo(() => {

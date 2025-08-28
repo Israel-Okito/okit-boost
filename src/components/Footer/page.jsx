@@ -30,12 +30,12 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-4">Services</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/services/tiktok" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
                   TikTok
                 </Link>
               </li>
               <li>
-                <Link href="/services/instagram" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
                   Instagram
                 </Link>
               </li>
@@ -45,7 +45,7 @@ export default function Footer() {
                 </Link>
               </li> */}
               <li>
-                <Link href="/services/facebook" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/services" className="text-gray-400 hover:text-white transition-colors">
                   Facebook
                 </Link>
               </li>

@@ -170,8 +170,7 @@ export const optimizedQueries = {
         platform_id,
         category,
         is_active,
-        delivery_time,
-        refill_enabled
+        delivery_time
       `)
       .eq('is_active', isActive)
 

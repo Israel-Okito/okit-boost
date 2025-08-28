@@ -62,14 +62,15 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
       fees: 'Frais: 1.5%',
       available: true
     },
-    {
-      id: 'mtn',
-      name: 'MTN Mobile Money',
-      icon: '🟡',
-      description: 'Paiement via MTN Mobile Money',
-      fees: 'Frais: 2%',
-      available: false // Pas encore disponible en RDC via CinetPay
-    }
+   
+    // {
+    //   id: 'mtn',
+    //   name: 'MTN Mobile Money',
+    //   icon: '🟡',
+    //   description: 'Paiement via MTN Mobile Money',
+    //   fees: 'Frais: 2%',
+    //   available: false // Pas encore disponible en RDC via CinetPay
+    // }
   ]
 
   useEffect(() => {
@@ -132,11 +133,6 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
       setLoading(true)
       setPaymentStep('processing')
 
-      console.log('Initiation du paiement CinetPay...')
-      console.log('Items panier:', cartItems)
-      console.log('Devise:', currency)
-      console.log('Méthode sélectionnée:', selectedMethod)
-      console.log('Données client:', customerData)
 
       const paymentData = {
         cartItems: cartItems,
@@ -162,7 +158,6 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
         throw new Error(data.error || 'Erreur lors de la création du paiement')
       }
 
-      console.log('Paiement CinetPay créé:', data)
 
       // Redirection vers la page de paiement CinetPay
       if (data.paymentUrl) {
@@ -287,7 +282,7 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
             {paymentMethods.map((method) => (
               <div
                 key={method.id}
-                className={`flex items-center space-x-2 p-4 rounded-lg border transition-colors ${
+                className={`flex items-center space-x-2 p-1 rounded-lg border transition-colors ${
                   method.available 
                     ? 'cursor-pointer hover:bg-gray-50' 
                     : 'opacity-50 cursor-not-allowed'
@@ -391,43 +386,7 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
         </CardContent>
       </Card>
 
-      {/* Sécurité et informations */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <Shield className="w-5 h-5 text-green-600" />
-              <div>
-                <h4 className="font-medium">Paiement sécurisé</h4>
-                <p className="text-sm text-muted-foreground">
-                  Vos données sont protégées par le chiffrement SSL
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Clock className="w-5 h-5 text-blue-600" />
-              <div>
-                <h4 className="font-medium">Traitement rapide</h4>
-                <p className="text-sm text-muted-foreground">
-                  Confirmation instantanée du paiement
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Smartphone className="w-5 h-5 text-purple-600" />
-              <div>
-                <h4 className="font-medium">Mobile Money</h4>
-                <p className="text-sm text-muted-foreground">
-                  Paiement direct depuis votre portefeuille mobile
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+     
       {/* Instructions de paiement */}
       {selectedMethod && (
         <Alert>
@@ -465,6 +424,44 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
             </>
           )}
         </Button>
+
+         {/* Sécurité et informations */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Shield className="w-5 h-5 text-green-600" />
+              <div>
+                <h4 className="font-medium">Paiement sécurisé</h4>
+                <p className="text-sm text-muted-foreground">
+                  Vos données sont protégées par le chiffrement SSL
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Clock className="w-5 h-5 text-blue-600" />
+              <div>
+                <h4 className="font-medium">Traitement rapide</h4>
+                <p className="text-sm text-muted-foreground">
+                  Confirmation instantanée du paiement
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <Smartphone className="w-5 h-5 text-purple-600" />
+              <div>
+                <h4 className="font-medium">Mobile Money</h4>
+                <p className="text-sm text-muted-foreground">
+                  Paiement direct depuis votre portefeuille mobile
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
 
         <p className="text-xs text-center text-muted-foreground">
           En cliquant sur "Payer maintenant", vous acceptez nos conditions d'utilisation

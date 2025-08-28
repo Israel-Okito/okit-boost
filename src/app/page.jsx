@@ -65,7 +65,7 @@ export default function HomePage() {
                   <CardDescription className="text-gray-600">{platform.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Link href={`/services/${platform.id}`}>
+                  <Link href={`/services`}>
                     <Button className="w-full">Voir les services</Button>
                   </Link>
                 </CardContent>

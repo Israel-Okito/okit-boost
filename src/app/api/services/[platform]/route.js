@@ -6,21 +6,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request,  context ) {
   try {
     const supabase = await createClient()
-    
-    // // Vérifier l'authentification
-    // const {
-    //   data: { session },
-    //   error: sessionError,
-    // } = await supabase.auth.getSession()
 
-    // if (sessionError || !session) {
-    //   return NextResponse.json(
-    //     { error: 'Non authentifié' },
-    //     { status: 401 }
-    //   )
-    // }
-
-    
 
     const params = await context.params
     const platform  = params.platform

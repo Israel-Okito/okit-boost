@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/utils/supabase/client"
+import { getAuthRedirectURL } from "@/lib/utils/url"
 
 export default function ConnexionPage() {
   const [session, setSession] = useState(null)
@@ -36,7 +37,7 @@ export default function ConnexionPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback`,
+          redirectTo: getAuthRedirectURL('/auth/callback'),
         },
       })
       if (error) {

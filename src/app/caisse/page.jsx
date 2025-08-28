@@ -98,10 +98,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8 py-8">
         {/* Header avec breadcrumb */}
         <div className="mb-8">
-          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <div className="flex items-center max-sm:flex-col justify-self-start space-x-2 text-sm text-gray-600 mb-4">
             <button 
               onClick={() => router.push("/services")}
               className="hover:text-blue-600 transition-colors flex items-center space-x-1"
@@ -109,29 +109,20 @@ export default function CheckoutPage() {
               <ArrowLeft className="w-4 h-4" />
               <span>Retour aux services</span>
             </button>
-            <span>•</span>
-            <span className="text-gray-900 font-medium">Finaliser la commande</span>
+            <div className="flex items-center space-x-2">
+              <span>•</span>
+              <span className="text-gray-900 font-medium">Finaliser la commande</span>
+            </div>
           </div>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center space-x-3">
                 <Lock className="w-8 h-8 text-green-600" />
                 <span>Paiement sécurisé</span>
               </h1>
               <p className="text-gray-600 mt-2">Complétez votre commande en toute sécurité</p>
             </div>
-            {/* Bouton temporaire de débogage */}
-            {items.some(item => item.platform && !item.platform_id) && (
-              <Button 
-                onClick={handleClearCartForMigration} 
-                variant="outline" 
-                size="sm"
-                className="text-red-600 border-red-200 hover:bg-red-50"
-              >
-                <Trash2 className="w-4 h-4 mr-1" />
-                Corriger le panier
-              </Button>
-            )}
+ 
           </div>
         </div>
 
@@ -140,9 +131,11 @@ export default function CheckoutPage() {
         <div>
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-              <CardTitle className="flex items-center">
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Récapitulatif de la commande
+              <CardTitle className="flex items-center max-sm:flex-col py-2">
+              <div className="flex items-center max-sm:text-sm">
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Récapitulatif de la commande
+              </div>
                 <Badge variant="secondary" className="ml-auto bg-white/20 text-white">
                   {items.length} service{items.length > 1 ? 's' : ''}
                 </Badge>
@@ -174,7 +167,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 {items.map((item, index) => (
                   <div key={item.service_id} className="group">
-                    <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200 space-y-3 sm:space-y-0">
                       <div className="flex-1">
                         <div className="flex items-start space-x-3">
                           <div className="flex-shrink-0">
@@ -182,7 +175,7 @@ export default function CheckoutPage() {
                               {index + 1}
                             </div>
                           </div>
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900">{item.service_name}</h3>
                             <div className="flex items-center space-x-2 mt-1">
                               <Badge variant="outline" className="text-xs capitalize">
@@ -192,13 +185,15 @@ export default function CheckoutPage() {
                               <span className="text-xs text-gray-500">Service premium</span>
                             </div>
                             <p className="text-sm text-gray-600 mt-1">Quantité: {item.quantity.toLocaleString()}</p>
-                            <p className="text-xs text-gray-500 truncate max-w-xs" title={item.target_link}>
-                              {item.target_link}
-                            </p>
+                            <div className="text-xs text-gray-500 break-all">
+                              <p className="line-clamp-2 leading-relaxed" title={item.target_link}>
+                                <span className="font-medium">Lien:</span> {item.target_link}
+                              </p>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right flex flex-col items-end space-y-2">
+                      <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start space-x-2 sm:space-x-0 sm:space-y-2 sm:text-right">
                         <div className="font-bold text-lg text-blue-600">
                           {currency === "CDF"
                             ? `${item.total_cdf.toLocaleString()} CDF`
@@ -211,10 +206,11 @@ export default function CheckoutPage() {
                             removeItem(item.service_id)
                             toast.success('Service retiré du panier')
                           }}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 transition-all"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 transition-all flex-shrink-0"
                           title="Retirer du panier"
                         >
                           <Trash2 className="w-4 h-4" />
+                          {/* <span className="ml-1 sm:hidden">Supprimer</span> */}
                         </Button>
                       </div>
                     </div>
@@ -224,7 +220,7 @@ export default function CheckoutPage() {
 
               <Separator className="my-6" />
 
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-2 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div className="text-gray-700">
                     <div className="text-sm font-medium">Total à payer</div>
@@ -251,10 +247,7 @@ export default function CheckoutPage() {
               <CardTitle className="flex items-center">
                 <CreditCard className="w-5 h-5 mr-2" />
                 Informations de paiement
-                <Badge variant="secondary" className="ml-auto bg-white/20 text-white">
-                  <Shield className="w-3 h-3 mr-1" />
-                  Sécurisé
-                </Badge>
+            
               </CardTitle>
               <CardDescription className="text-white/90">
                 Complétez vos informations pour finaliser la commande
@@ -267,7 +260,7 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <Smartphone className="w-6 h-6 text-blue-600" />
                     <span className="text-lg font-semibold">Paiement Mobile Money</span>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    <Badge variant="secondary" className="bg-green-100 text-green-800 max-lg:hidden">
                       <Zap className="w-3 h-3 mr-1" />
                       Instantané
                     </Badge>

@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 
 // GET - Récupérer tous les services
 export async function GET() {
@@ -65,6 +66,7 @@ export async function POST(request) {
       .from('services')
       .insert([
         {
+          id: randomUUID(),
           platform_id,
           name,
           description,

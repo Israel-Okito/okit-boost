@@ -8,6 +8,7 @@ import { errorHandler, ERROR_TYPES } from "@/lib/errors/errorHandler"
 import { logger } from "@/lib/errors/logger"
 import { circuitBreakerManager } from "@/lib/errors/circuitBreaker"
 import { retryManager, RETRY_CONFIGS } from "@/lib/errors/retrySystem"
+import { getCinetPayConfig } from "@/lib/utils/url"
 
 /**
  * Créer un lien de paiement CinetPay avec sécurité renforcée et gestion d'erreurs avancée
