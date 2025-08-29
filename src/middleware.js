@@ -175,7 +175,9 @@ export async function middleware(request) {
     '/api/auth/callback',
     '/api/trial-requests',
     '/api/platforms',
-    '/api/services'
+    '/api/services',
+    '/api/payments',
+    '/api/webhooks'
   ]
 
   // Vérifier si la route est publique
