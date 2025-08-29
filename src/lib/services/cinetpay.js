@@ -205,6 +205,11 @@ export class CinetPayService {
    */
   verifyWebhookSignature(payload) {
     try {
+      // Mode développement : permettre les webhooks de test manuels
+      if (process.env.NODE_ENV === 'development' && payload.signature === 'manual-completion-signature') {
+        return true
+      }
+
       if (!payload.signature || !this.config.secretKey) {
         return false
       }

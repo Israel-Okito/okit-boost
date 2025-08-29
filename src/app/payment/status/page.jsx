@@ -13,7 +13,6 @@ import {
   Package
 } from 'lucide-react'
 import PaymentStatusTracker from '@/components/payment/PaymentStatusTracker'
-import { toast } from 'sonner'
 
 // Composant interne pour gérer les paramètres de recherche
 function PaymentStatusContent() {
@@ -23,37 +22,62 @@ function PaymentStatusContent() {
   const [transactionId, setTransactionId] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [transactionData, setTransactionData] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Récupération des paramètres depuis l'URL
-    const txId = searchParams.get('transaction_id') || searchParams.get('transactionId')
-    const statusParam = searchParams.get('status')
-    
-    if (txId) {
-      setTransactionId(txId)
-    }
-    
-    if (statusParam) {
-      setStatus(statusParam)
-    }
-
-    // Vérifier le localStorage pour les données de transaction
-    const savedTransaction = localStorage.getItem('cinetpay_transaction')
-    if (savedTransaction) {
+    const loadTransactionStatus = async () => {
       try {
-        const transactionData = JSON.parse(savedTransaction)
-        if (!txId && transactionData.transactionId) {
-          setTransactionId(transactionData.transactionId)
+        // Récupération des paramètres depuis l'URL
+        const txId = searchParams.get('transaction_id') || searchParams.get('transactionId')
+        
+        // Vérifier le localStorage pour les données de transaction
+        const savedTransaction = localStorage.getItem('cinetpay_transaction')
+        let finalTxId = txId
+        
+        if (savedTransaction) {
+          try {
+            const saved = JSON.parse(savedTransaction)
+            if (!txId && saved.transactionId) {
+              finalTxId = saved.transactionId
+            }
+            localStorage.removeItem('cinetpay_transaction')
+          } catch (error) {
+            console.error('Erreur parsing transaction data:', error)
+          }
+        }
+
+        if (!finalTxId) {
+          setLoading(false)
+          return
+        }
+
+        setTransactionId(finalTxId)
+
+        // Appeler l'API pour récupérer le statut réel
+        const response = await fetch(`/api/payments/cinetpay/status?transactionId=${finalTxId}`)
+        
+        if (response.ok) {
+          const data = await response.json()
+          setTransactionData(data)
+          setStatus(data.transaction?.status || 'unknown')
+          
+          // Transaction status récupéré avec succès
+        } else {
+          const errorData = await response.json()
+          setError(errorData.error || 'Erreur lors de la récupération du statut')
+          console.error('Erreur API status:', errorData)
         }
         
-        // Nettoyer le localStorage après récupération
-        localStorage.removeItem('cinetpay_transaction')
       } catch (error) {
-        console.error('Erreur parsing transaction data:', error)
+        console.error('Erreur récupération statut:', error)
+        setError('Erreur de connexion')
+      } finally {
+        setLoading(false)
       }
     }
 
-    setLoading(false)
+    loadTransactionStatus()
   }, [searchParams])
 
   const handleStatusChange = (newStatus, transactionData) => {
@@ -73,6 +97,45 @@ function PaymentStatusContent() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Chargement du statut de paiement...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-2xl mx-auto px-4 py-16">
+          <Card className="text-center">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center space-x-2 text-red-600">
+                <XCircle className="w-6 h-6" />
+                <span>Erreur de transaction</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-gray-600">{error}</p>
+              <p className="text-sm text-gray-500">
+                Transaction ID: {transactionId || 'Non fourni'}
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  onClick={() => router.push('/services')}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour aux services
+                </Button>
+                <Button 
+                  onClick={() => window.location.reload()}
+                  variant="outline"
+                >
+                  Réessayer
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )

@@ -66,32 +66,27 @@ export async function GET(request) {
         }
       })
 
-      // 2. Vérifier le taux d'erreur élevé (dernière heure)
+      // 2. Vérifier les transactions échouées (comme taux d'erreur)
       const lastHour = new Date(now.getTime() - 60 * 60 * 1000)
       const { data: recentErrors } = await supabase
-        .from('error_logs')
-        .select('id, severity, type')
+        .from('payment_transactions')
+        .select('id, status, created_at')
+        .eq('status', 'failed')
         .gte('created_at', lastHour.toISOString())
 
-      if (recentErrors && recentErrors.length > 10) {
-        const criticalErrors = recentErrors.filter(e => e.severity === 'critical').length
-        
+      if (recentErrors && recentErrors.length > 3) {
         alerts.push({
           id: 'high_error_rate',
           type: 'error_rate',
-          severity: criticalErrors > 5 ? 'critical' : 'warning',
-          title: 'Taux d\'erreur élevé',
-          message: `${recentErrors.length} erreurs dans la dernière heure (${criticalErrors} critiques)`,
+          severity: recentErrors.length > 10 ? 'critical' : 'warning',
+          title: 'Taux d\'échec de paiement élevé',
+          message: `${recentErrors.length} transactions ont échoué dans la dernière heure`,
           timestamp: now.toISOString(),
           data: {
             totalErrors: recentErrors.length,
-            criticalErrors,
-            errorTypes: recentErrors.reduce((acc, error) => {
-              acc[error.type] = (acc[error.type] || 0) + 1
-              return acc
-            }, {})
+            recentFailures: recentErrors.slice(0, 5)
           },
-          actions: ['view_errors', 'export_logs']
+          actions: ['view_errors', 'check_cinetpay']
         })
       }
 

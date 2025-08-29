@@ -59,15 +59,32 @@ function PaymentSuccessContent() {
         setChecking(true)
       }
 
-      const response = await fetch(`/api/payments/cinetpay?transactionId=${transactionId}`)
+      const response = await fetch(`/api/payments/cinetpay/status?transactionId=${transactionId}`)
       const data = await response.json()
 
       if (response.ok) {
-        setPaymentStatus(data)
+        // Adapter la structure de réponse de notre nouvelle API avec gestion des valeurs nulles
+        const adaptedData = {
+          transactionId: data.transaction?.id || transactionId,
+          status: (data.transaction?.status || 'PENDING').toUpperCase(),
+          amount: data.transaction?.amount || 0,
+          currency: data.transaction?.currency || 'CDF',
+          paymentMethod: data.transaction?.paymentMethod || 'mobile_money',
+          paymentDate: data.transaction?.completedAt || data.transaction?.createdAt,
+          customerPhone: data.transaction?.customerPhone || '',
+          order: data.order ? {
+            orderNumber: data.order.id || 'N/A',
+            status: data.order.status || 'pending',
+            total: data.order.total || { cdf: 0, usd: 0 }
+          } : null,
+          lastChecked: new Date().toISOString()
+        }
+        
+        setPaymentStatus(adaptedData)
         setRetryCount(0)
 
         // Afficher un toast seulement si le statut a changé
-        if (!isAutoCheck && data.status === 'ACCEPTED') {
+        if (!isAutoCheck && adaptedData.status === 'ACCEPTED') {
           toast.success('Paiement confirmé !')
         }
       } else {

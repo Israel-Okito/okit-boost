@@ -47,6 +47,7 @@ import {
 import { formatCurrency, formatNumber, timeAgo } from '@/lib/utils/common'
 import { ORDER_STATUS, PAYMENT_STATUS } from '@/lib/constants/app'
 import { StatsCardSkeleton, DataListSkeleton } from '@/components/ui/skeletons'
+import TransactionsManager from './TransactionsManager'
 
 const Dashboard = () => {
   // États
@@ -358,11 +359,12 @@ const Dashboard = () => {
 
       {/* Graphiques et tableaux */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
           <TabsTrigger value="revenue">Revenus</TabsTrigger>
           <TabsTrigger value="orders">Commandes</TabsTrigger>
           <TabsTrigger value="users">Utilisateurs</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
         </TabsList>
 
         {/* Vue d'ensemble */}
@@ -667,6 +669,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Onglet Transactions */}
+        <TabsContent value="transactions">
+          <TransactionsManager />
         </TabsContent>
       </Tabs>
     </div>

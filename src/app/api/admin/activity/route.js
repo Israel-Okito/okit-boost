@@ -130,17 +130,18 @@ export async function GET(request) {
           .limit(Math.floor(limit / 4))
           .then(({ data }) => data || []) : [],
 
-        // Erreurs récentes
+        // Transactions échouées (comme erreurs)
         (!type || type === 'error') ? supabase
-          .from('error_logs')
+          .from('payment_transactions')
           .select(`
             id,
-            type,
-            severity,
-            message,
+            transaction_id,
+            status,
             created_at,
-            user_id
+            user_id,
+            customer_email
           `)
+          .eq('status', 'failed')
           .gte('created_at', startDate.toISOString())
           .order('created_at', { ascending: false })
           .limit(Math.floor(limit / 4))
@@ -231,20 +232,18 @@ export async function GET(request) {
         })
       })
 
-      // Transformer les erreurs en activités
+      // Transformer les transactions échouées en activités d'erreur
       recentErrors.forEach(error => {
         activities.push({
           id: `error_${error.id}`,
           type: 'error',
-          description: `Erreur ${error.type}: ${error.message.substring(0, 50)}...`,
+          description: `Transaction échouée: ${error.transaction_id} - ${error.customer_email}`,
           details: {
-            errorId: error.id,
-            type: error.type,
-            severity: error.severity,
-            message: error.message
+            transactionId: error.transaction_id,
+            status: error.status,
+            customerEmail: error.customer_email
           },
-          severity: error.severity === 'critical' ? 'high' : 
-                   error.severity === 'high' ? 'medium' : 'low',
+          severity: 'medium',
           timestamp: error.created_at,
           userId: error.user_id,
           icon: 'AlertTriangle',

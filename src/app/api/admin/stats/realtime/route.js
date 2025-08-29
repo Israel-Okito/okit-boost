@@ -44,19 +44,18 @@ export async function GET(request) {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-    // Statistiques en temps réel
+    // Statistiques en temps réel (utilisation des tables existantes)
     const [
       activeUsers,
       todayOrders,
       todayRevenue,
-      recentErrors,
-      currentLoad
+      recentTransactions
     ] = await Promise.all([
-      // Utilisateurs actifs (connectés dans les 15 dernières minutes)
+      // Utilisateurs actifs approximatifs (basé sur les connexions récentes)
       supabase
-        .from('user_sessions')
-        .select('user_id')
-        .gte('last_activity', new Date(now.getTime() - 15 * 60 * 1000).toISOString())
+        .from('profiles')
+        .select('last_sign_in_at')
+        .gte('last_sign_in_at', new Date(now.getTime() - 60 * 60 * 1000).toISOString())
         .then(({ data }) => data?.length || 0),
 
       // Commandes d'aujourd'hui
@@ -66,43 +65,47 @@ export async function GET(request) {
         .gte('created_at', todayStart.toISOString())
         .then(({ data }) => data?.length || 0),
 
-      // Revenus d'aujourd'hui
+      // Revenus d'aujourd'hui (depuis les commandes complétées)
       supabase
-        .from('payment_transactions')
-        .select('amount')
-        .eq('status', 'ACCEPTED')
+        .from('orders')
+        .select('total_usd, total_cdf, currency')
+        .eq('status', 'completed')
         .gte('created_at', todayStart.toISOString())
         .then(({ data }) => 
-          data?.reduce((sum, transaction) => sum + (transaction.amount || 0), 0) || 0
+          data?.reduce((sum, order) => {
+            if (order.total_usd) {
+              return sum + parseFloat(order.total_usd)
+            } else if (order.total_cdf) {
+              return sum + (parseFloat(order.total_cdf) / 1667)
+            }
+            return sum
+          }, 0) || 0
         ),
 
-      // Erreurs récentes (dernière heure)
+      // Transactions récentes pour calculer l'activité
       supabase
-        .from('error_logs')
-        .select('id, severity')
+        .from('payment_transactions')
+        .select('id, status, created_at')
         .gte('created_at', new Date(now.getTime() - 60 * 60 * 1000).toISOString())
-        .then(({ data }) => data || []),
-
-      // Charge système actuelle (approximative basée sur les requêtes)
-      supabase
-        .from('api_logs')
-        .select('id')
-        .gte('created_at', new Date(now.getTime() - 5 * 60 * 1000).toISOString())
-        .then(({ data }) => data?.length || 0)
+        .then(({ data }) => data || [])
     ])
 
-    // Calcul du taux d'erreur
-    const totalRequests = Math.max(currentLoad, 1)
-    const errorRate = (recentErrors.length / totalRequests) * 100
+    // Calcul du taux d'erreur approximatif
+    const failedTransactions = recentTransactions.filter(t => t.status === 'failed').length
+    const totalTransactions = Math.max(recentTransactions.length, 1)
+    const errorRate = (failedTransactions / totalTransactions) * 100
 
     // Calcul des tendances (comparaison avec l'heure précédente)
-    const previousHourStart = new Date(now.getTime() - 60 * 60 * 1000)
     const currentHourStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours())
+    const previousHourStart = new Date(currentHourStart.getTime() - 60 * 60 * 1000)
 
     const [
       previousHourOrders,
-      previousHourRevenue
+      previousHourRevenue,
+      currentHourOrders,
+      currentHourRevenue
     ] = await Promise.all([
+      // Commandes heure précédente
       supabase
         .from('orders')
         .select('id')
@@ -110,32 +113,48 @@ export async function GET(request) {
         .lt('created_at', currentHourStart.toISOString())
         .then(({ data }) => data?.length || 0),
 
+      // Revenus heure précédente
       supabase
-        .from('payment_transactions')
-        .select('amount')
-        .eq('status', 'ACCEPTED')
+        .from('orders')
+        .select('total_usd, total_cdf, currency')
+        .eq('status', 'completed')
         .gte('created_at', previousHourStart.toISOString())
         .lt('created_at', currentHourStart.toISOString())
         .then(({ data }) => 
-          data?.reduce((sum, transaction) => sum + (transaction.amount || 0), 0) || 0
+          data?.reduce((sum, order) => {
+            if (order.total_usd) {
+              return sum + parseFloat(order.total_usd)
+            } else if (order.total_cdf) {
+              return sum + (parseFloat(order.total_cdf) / 1667)
+            }
+            return sum
+          }, 0) || 0
+        ),
+
+      // Commandes heure actuelle
+      supabase
+        .from('orders')
+        .select('id')
+        .gte('created_at', currentHourStart.toISOString())
+        .then(({ data }) => data?.length || 0),
+
+      // Revenus heure actuelle
+      supabase
+        .from('orders')
+        .select('total_usd, total_cdf, currency')
+        .eq('status', 'completed')
+        .gte('created_at', currentHourStart.toISOString())
+        .then(({ data }) => 
+          data?.reduce((sum, order) => {
+            if (order.total_usd) {
+              return sum + parseFloat(order.total_usd)
+            } else if (order.total_cdf) {
+              return sum + (parseFloat(order.total_cdf) / 1667)
+            }
+            return sum
+          }, 0) || 0
         )
     ])
-
-    // Commandes de l'heure actuelle
-    const currentHourOrders = await supabase
-      .from('orders')
-      .select('id')
-      .gte('created_at', currentHourStart.toISOString())
-      .then(({ data }) => data?.length || 0)
-
-    const currentHourRevenue = await supabase
-      .from('payment_transactions')
-      .select('amount')
-      .eq('status', 'ACCEPTED')
-      .gte('created_at', currentHourStart.toISOString())
-      .then(({ data }) => 
-        data?.reduce((sum, transaction) => sum + (transaction.amount || 0), 0) || 0
-      )
 
     // Calcul des tendances
     const ordersTrend = previousHourOrders > 0 ? 
@@ -173,9 +192,9 @@ export async function GET(request) {
     const data = {
       activeUsers,
       todayOrders,
-      todayRevenue,
+      todayRevenue: parseFloat(todayRevenue.toFixed(2)),
       errorRate: parseFloat(errorRate.toFixed(2)),
-      systemLoad: Math.min((currentLoad / 100) * 100, 100), // Pourcentage
+      systemLoad: Math.min((recentTransactions.length / 10) * 100, 100), // Pourcentage basé sur l'activité
       trends: {
         orders: parseFloat(ordersTrend.toFixed(1)),
         revenue: parseFloat(revenueTrend.toFixed(1))
@@ -186,23 +205,23 @@ export async function GET(request) {
       
       // Métriques détaillées
       metrics: {
-        totalErrors: recentErrors.length,
-        criticalErrors: recentErrors.filter(e => e.severity === 'critical').length,
+        totalErrors: failedTransactions,
+        criticalErrors: failedTransactions,
         avgResponseTime: Math.round(Math.random() * 200 + 100), // Mock - intégrer avec monitoring réel
         uptime: 99.9, // Mock - intégrer avec monitoring réel
         
-        // Répartition des erreurs par type
-        errorsByType: recentErrors.reduce((acc, error) => {
-          acc[error.type] = (acc[error.type] || 0) + 1
+        // Répartition des transactions par statut
+        transactionsByStatus: recentTransactions.reduce((acc, transaction) => {
+          acc[transaction.status] = (acc[transaction.status] || 0) + 1
           return acc
         }, {}),
         
-        // Performance - désactivé pour optimisation
-        // performance: {
-        //   databaseQueries: Math.round(Math.random() * 50 + 20),
-        //   cacheHitRate: Math.round(Math.random() * 20 + 80),
-        //   memoryUsage: Math.round(Math.random() * 30 + 40)
-        // }
+        // Performance simplifiée
+        performance: {
+          activeTransactions: recentTransactions.length,
+          successRate: Math.round(((totalTransactions - failedTransactions) / totalTransactions) * 100),
+          totalTransactions: totalTransactions
+        }
       }
     }
 
