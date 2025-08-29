@@ -359,12 +359,12 @@ const Dashboard = () => {
 
       {/* Graphiques et tableaux */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
-          <TabsTrigger value="revenue">Revenus</TabsTrigger>
-          <TabsTrigger value="orders">Commandes</TabsTrigger>
-          <TabsTrigger value="users">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5 gap-1">
+          <TabsTrigger value="overview" className="text-xs lg:text-sm">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="revenue" className="text-xs lg:text-sm">Revenus</TabsTrigger>
+          <TabsTrigger value="orders" className="text-xs lg:text-sm">Commandes</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs lg:text-sm">Utilisateurs</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs lg:text-sm col-span-3 lg:col-span-1">Transactions</TabsTrigger>
         </TabsList>
 
         {/* Vue d'ensemble */}
@@ -546,24 +546,10 @@ const Dashboard = () => {
                   <Legend />
                   <Line 
                     type="monotone" 
-                    dataKey="total" 
+                    dataKey="amount" 
                     stroke={chartColors.primary}
                     strokeWidth={2}
-                    name="Total"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="cinetpay" 
-                    stroke={chartColors.secondary}
-                    strokeWidth={2}
-                    name="CinetPay"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="manual" 
-                    stroke={chartColors.accent}
-                    strokeWidth={2}
-                    name="Manuel"
+                    name="Revenus CinetPay"
                   />
                 </LineChart>
               </ResponsiveContainer>

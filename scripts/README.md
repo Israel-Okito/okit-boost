@@ -41,6 +41,24 @@ node scripts/test-webhook.js OKIT1756431911287W1HSJ0XL
 - Vérifie le traitement du webhook
 - Affiche le statut mis à jour
 
+### `complete-order.js`
+Marque une commande comme complétée pour calculer les revenus.
+
+**Usage:**
+```bash
+node scripts/complete-order.js <order_id>
+```
+
+**Exemple:**
+```bash
+node scripts/complete-order.js b0be07c4-5c19-4c88-829b-89e64a919914
+```
+
+**Fonctionnalités:**
+- Met à jour le statut de la commande vers "completed"
+- Met à jour les articles de la commande
+- Permet le calcul des revenus dans le dashboard
+
 ## Configuration requise
 
 Assurez-vous que le fichier `.env.local` contient :

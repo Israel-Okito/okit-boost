@@ -173,12 +173,7 @@ export async function GET(request) {
         total: currentTotalUSD,
         previous: previousTotalUSD,
         chart: revenueChart,
-        detailed: revenueChart.map(item => ({
-          ...item,
-          total: item.amount,
-          cinetpay: item.amount * 0.8, // 80% via CinetPay
-          manual: item.amount * 0.2    // 20% manuel
-        }))
+        detailed: revenueChart
       },
       orders: {
         total: totalOrders || 0,
