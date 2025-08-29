@@ -62,20 +62,23 @@ function PaymentSuccessContent() {
       const response = await fetch(`/api/payments/cinetpay/status?transactionId=${transactionId}`)
       const data = await response.json()
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         // Adapter la structure de réponse de notre nouvelle API avec gestion des valeurs nulles
         const adaptedData = {
-          transactionId: data.transaction?.id || transactionId,
+          transactionId: data.transaction?.transaction_id || transactionId,
           status: (data.transaction?.status || 'PENDING').toUpperCase(),
           amount: data.transaction?.amount || 0,
           currency: data.transaction?.currency || 'CDF',
-          paymentMethod: data.transaction?.paymentMethod || 'mobile_money',
-          paymentDate: data.transaction?.completedAt || data.transaction?.createdAt,
-          customerPhone: data.transaction?.customerPhone || '',
+          paymentMethod: data.transaction?.payment_method || 'mobile_money',
+          paymentDate: data.transaction?.completed_at || data.transaction?.created_at,
+          customerPhone: data.transaction?.customer_phone || '',
           order: data.order ? {
-            orderNumber: data.order.id || 'N/A',
+            orderNumber: data.order.order_number || 'N/A',
             status: data.order.status || 'pending',
-            total: data.order.total || { cdf: 0, usd: 0 }
+            total: { 
+              cdf: data.order.total_cdf || 0, 
+              usd: data.order.total_usd || 0 
+            }
           } : null,
           lastChecked: new Date().toISOString()
         }
@@ -87,15 +90,49 @@ function PaymentSuccessContent() {
         if (!isAutoCheck && adaptedData.status === 'ACCEPTED') {
           toast.success('Paiement confirmé !')
         }
+      } else if (!response.ok && response.status === 404) {
+        // Transaction non trouvée - créer un statut par défaut
+        const fallbackData = {
+          transactionId: transactionId,
+          status: 'PENDING',
+          amount: 0,
+          currency: 'CDF',
+          paymentMethod: 'mobile_money',
+          paymentDate: null,
+          customerPhone: '',
+          order: null,
+          lastChecked: new Date().toISOString(),
+          error: 'Transaction non trouvée en base de données'
+        }
+        
+        setPaymentStatus(fallbackData)
+        
+        if (!isAutoCheck) {
+          toast.error('Transaction non trouvée. Le paiement est peut-être encore en cours de traitement.')
+        }
       } else {
-        throw new Error(data.error || 'Erreur lors de la vérification')
+        throw new Error(data.error || `Erreur serveur: ${response.status}`)
       }
     } catch (error) {
       console.error('Erreur vérification paiement:', error)
       setRetryCount(prev => prev + 1)
       
+      // Si on ne peut pas vérifier, créer un statut d'erreur
+      setPaymentStatus({
+        transactionId: transactionId,
+        status: 'UNKNOWN',
+        amount: 0,
+        currency: 'CDF',
+        paymentMethod: 'mobile_money',
+        paymentDate: null,
+        customerPhone: '',
+        order: null,
+        lastChecked: new Date().toISOString(),
+        error: error.message
+      })
+      
       if (!isAutoCheck) {
-        toast.error('Erreur lors de la vérification du paiement')
+        toast.error('Impossible de vérifier le paiement. Réessayez dans quelques instants.')
       }
     } finally {
       setLoading(false)
@@ -135,6 +172,14 @@ function PaymentSuccessContent() {
           title: 'Paiement annulé',
           description: 'Votre paiement a été annulé. Vous pouvez réessayer ou choisir une autre méthode.',
           badgeClass: 'bg-orange-100 text-orange-800',
+          alertType: 'warning'
+        }
+      case 'UNKNOWN':
+        return {
+          icon: <AlertCircle className="w-16 h-16 text-gray-500" />,
+          title: 'Statut indéterminé',
+          description: 'Nous ne parvenons pas à vérifier le statut de votre paiement. Contactez le support si le problème persiste.',
+          badgeClass: 'bg-gray-100 text-gray-800',
           alertType: 'warning'
         }
       default:
@@ -231,6 +276,16 @@ function PaymentSuccessContent() {
                   {statusConfig.title}
                 </Badge>
               </div>
+
+              {/* Erreur spécifique si présente */}
+              {paymentStatus.error && (
+                <Alert className="border-yellow-200 bg-yellow-50">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    <strong>Détail:</strong> {paymentStatus.error}
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Informations de transaction */}
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
