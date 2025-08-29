@@ -166,7 +166,8 @@ export async function middleware(request) {
     '/services',
     '/faq',
     '/conditions-utilisation',
-    'contact'
+    '/contact',
+    '/paiement'
   ]
 
   // Routes API publiques
