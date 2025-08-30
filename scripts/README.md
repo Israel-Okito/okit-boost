@@ -59,6 +59,20 @@ node scripts/complete-order.js b0be07c4-5c19-4c88-829b-89e64a919914
 - Met à jour les articles de la commande
 - Permet le calcul des revenus dans le dashboard
 
+### `test-webhook-manual.js`
+Teste le webhook CinetPay manuellement avec une vraie transaction.
+
+**Usage:**
+```bash
+node scripts/test-webhook-manual.js
+```
+
+**Fonctionnalités:**
+- Simule un webhook CinetPay de succès
+- Utilise une vraie transaction ID
+- Vérifie que le webhook traite correctement les notifications
+- Utile pour déboguer les problèmes de webhook en production
+
 ## Configuration requise
 
 Assurez-vous que le fichier `.env.local` contient :

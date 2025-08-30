@@ -1,7 +1,7 @@
 // src/app/paiement/success/page.jsx
 "use client"
 
-import { useState, useEffect, Suspense } from "react"
+import React, { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,8 +33,24 @@ function PaymentSuccessContent() {
   const [checking, setChecking] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
 
-  const transactionId = searchParams.get('transaction_id')
-  const token = searchParams.get('token')
+  // Safe extraction of URL parameters
+  const transactionId = React.useMemo(() => {
+    try {
+      return searchParams?.get('transaction_id') || null
+    } catch (error) {
+      console.warn('Error getting transaction_id:', error)
+      return null
+    }
+  }, [searchParams])
+  
+  const token = React.useMemo(() => {
+    try {
+      return searchParams?.get('token') || null
+    } catch (error) {
+      console.warn('Error getting token:', error)
+      return null
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (transactionId) {

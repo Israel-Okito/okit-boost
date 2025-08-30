@@ -24,7 +24,8 @@ const DEFAULT_CONFIG = {
   maxFiles: 5,
   logDir: path.join(process.cwd(), 'logs'),
   enableConsole: true,
-  enableFile: true,
+  // Désactiver l'écriture de fichiers sur Vercel (read-only filesystem)
+  enableFile: process.env.NODE_ENV !== 'production' || !process.env.VERCEL,
   enableRotation: true,
   format: 'json', // 'json' ou 'text'
   timezone: 'UTC'
@@ -150,9 +151,20 @@ export class StructuredLogger {
    * Écrit vers fichier
    */
   async writeToFile(message, logType) {
+    if (!this.config.enableFile) {
+      return; // Skip file writing if disabled
+    }
+    
     const stream = this.streams.get(logType);
     if (stream && stream.writable) {
-      stream.write(message);
+      try {
+        stream.write(message);
+      } catch (error) {
+        // Ignore file write errors in production (Vercel read-only filesystem)
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Failed to write to log file ${logType}:`, error.message);
+        }
+      }
     }
   }
 

@@ -33,7 +33,14 @@ export async function POST(request) {
 
     // 3. Extraction des données du webhook
     const transactionId = payload.cpm_trans_id
-    const paymentStatus = payload.cpm_trans_status || payload.cmp_trans_status
+    
+    // Déterminer le statut du paiement basé sur cpm_result
+    let paymentStatus = payload.cpm_trans_status || payload.cmp_trans_status
+    
+    // Si pas de statut explicite, utiliser cpm_result pour déterminer le statut
+    if (!paymentStatus && payload.cpm_result) {
+      paymentStatus = payload.cpm_result === "00" ? "ACCEPTED" : "REFUSED"
+    }
     
     // 4. Récupération de la transaction existante
     const { data: transaction, error: transactionError } = await supabase
