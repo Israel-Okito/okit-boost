@@ -9,18 +9,77 @@ import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
 /**
+ * Gestionnaire GET pour vérifier que le webhook est accessible
+ */
+export async function GET(request) {
+  return NextResponse.json({
+    status: 'webhook_accessible',
+    method: 'GET',
+    timestamp: new Date().toISOString(),
+    message: 'CinetPay webhook endpoint is accessible. Use POST for notifications.'
+  })
+}
+
+/**
  * Gestionnaire principal du webhook CinetPay
  */
 export async function POST(request) {
   const startTime = Date.now()
   
   try {
-    // 1. Récupération et validation du payload
-    const payload = await request.json()
+    // 1. Récupération et validation du payload 
+    // CinetPay envoie les données en application/x-www-form-urlencoded
+    let payload = {}
+    
+    try {
+      // D'abord, récupérer le contenu brut
+      const contentType = request.headers.get('content-type') || ''
+      console.log('Content-Type received:', contentType)
+      
+      if (contentType.includes('application/x-www-form-urlencoded')) {
+        // Traiter comme form-encoded
+        const text = await request.text()
+        console.log('Raw form-encoded body:', text)
+        
+        const params = new URLSearchParams(text)
+        for (const [key, value] of params.entries()) {
+          payload[key] = value
+        }
+      } else if (contentType.includes('multipart/form-data')) {
+        // Traiter comme FormData
+        const formData = await request.formData()
+        for (const [key, value] of formData.entries()) {
+          payload[key] = value
+        }
+      } else {
+        // Essayer JSON en fallback
+        const text = await request.text()
+        console.log('Raw body (unknown content-type):', text)
+        
+        if (text.trim().startsWith('{')) {
+          payload = JSON.parse(text)
+        } else {
+          // Dernière tentative: form-encoded sans content-type
+          const params = new URLSearchParams(text)
+          for (const [key, value] of params.entries()) {
+            payload[key] = value
+          }
+        }
+      }
+    } catch (parseError) {
+      console.error('Error parsing webhook body:', parseError.message)
+      return NextResponse.json(
+        { error: 'Impossible de parser le body de la requête', details: parseError.message }, 
+        { status: 400 }
+      )
+    }
+    
+    // Log pour debug
+    console.log('Webhook payload parsed:', payload)
     
     if (!payload.cpm_trans_id) {
       return NextResponse.json(
-        { error: 'Transaction ID manquant' }, 
+        { error: 'Transaction ID manquant', receivedKeys: Object.keys(payload) }, 
         { status: 400 }
       )
     }
@@ -59,7 +118,7 @@ export async function POST(request) {
     // 5. Traitement du paiement accepté
     if (paymentStatus === 'ACCEPTED' && transaction.status !== 'completed') {
       await processSuccessfulPayment(supabase, transaction, transactionId)
-      
+
       return NextResponse.json({
         success: true,
         message: 'Paiement traité et commande créée',
@@ -167,7 +226,7 @@ async function processSuccessfulPayment(supabase, transaction, transactionId) {
       .eq('transaction_id', transactionId)
 
     console.log(`Commande ${order.id} créée avec succès pour transaction ${transactionId}`)
-    
+
   } catch (error) {
     console.error('Erreur traitement paiement réussi:', error)
     throw error

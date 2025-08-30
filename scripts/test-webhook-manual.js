@@ -21,24 +21,34 @@ async function testWebhookManual() {
     console.log('')
 
     // Simuler un webhook CinetPay de succès
-    const webhookPayload = {
+    // CinetPay envoie en application/x-www-form-urlencoded
+    const webhookData = {
       cpm_result: "00",           // Code succès CinetPay
       cpm_trans_id: REAL_TRANSACTION_ID,
       cpm_trans_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      cpm_site_id: process.env.CINETPAY_SITE_ID || "12345",
+      cpm_amount: "100",
+      cpm_currency: "CDF",
       signature: "manual-completion-signature" // Signature de test pour development
     }
 
-    console.log('📡 Envoi du webhook...')
-    console.log('Payload:', JSON.stringify(webhookPayload, null, 2))
+    // Convertir en FormData pour simuler exactement CinetPay
+    const formData = new URLSearchParams()
+    Object.entries(webhookData).forEach(([key, value]) => {
+      formData.append(key, value)
+    })
+
+    console.log('📡 Envoi du webhook (format CinetPay)...')
+    console.log('Données:', Object.fromEntries(formData.entries()))
     console.log('')
 
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Manual-Webhook-Test'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'CinetPay-Webhook-Simulator'
       },
-      body: JSON.stringify(webhookPayload)
+      body: formData.toString()
     })
 
     console.log(`Status: ${response.status} ${response.statusText}`)
