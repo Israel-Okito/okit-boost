@@ -94,12 +94,37 @@ export async function POST(request) {
     const transactionId = payload.cpm_trans_id
     
     // Déterminer le statut du paiement basé sur cpm_result
-    let paymentStatus = payload.cpm_trans_status || payload.cmp_trans_status
+    let paymentStatus = payload.cpm_trans_status || payload.cpm_trans_status
     
-    // Si pas de statut explicite, utiliser cpm_result pour déterminer le statut
-    if (!paymentStatus && payload.cpm_result) {
-      paymentStatus = payload.cpm_result === "00" ? "ACCEPTED" : "REFUSED"
+    // CinetPay utilise différents indicateurs selon la version :
+    // - cpm_result: "00" (ancienne version)  
+    // - cpm_error_message: "SUCCES" (nouvelle version V4)
+    console.log('🔍 Détection statut:', {
+      paymentStatus,
+      cpm_result: payload.cpm_result,
+      cpm_error_message: payload.cpm_error_message,
+      cpm_trans_status: payload.cpm_trans_status
+    })
+    
+    if (!paymentStatus) {
+      if (payload.cpm_result === "00") {
+        paymentStatus = "ACCEPTED"
+        console.log('✅ Statut détecté via cpm_result=00')
+      } else if (payload.cpm_error_message === "SUCCES") {
+        paymentStatus = "ACCEPTED" 
+        console.log('✅ Statut détecté via cpm_error_message=SUCCES')
+      } else if (payload.cpm_result && payload.cpm_result !== "00") {
+        paymentStatus = "REFUSED"
+        console.log('❌ Statut détecté via cpm_result!=00')
+      } else if (payload.cpm_error_message && payload.cpm_error_message !== "SUCCES") {
+        paymentStatus = "REFUSED"
+        console.log('❌ Statut détecté via cpm_error_message!=SUCCES')
+      } else {
+        console.log('⚠️  Aucun indicateur de statut reconnu')
+      }
     }
+    
+    console.log('🎯 Statut final:', paymentStatus)
     
     // 4. Récupération de la transaction existante
     const { data: transaction, error: transactionError } = await supabase

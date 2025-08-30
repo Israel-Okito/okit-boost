@@ -149,3 +149,14 @@ function getNextAction(status) {
   
   return actions[status] || 'contact_support'
 }
+
+// Ajouter un handler POST pour éviter l'erreur 405
+export async function POST(request) {
+  return NextResponse.json(
+    { 
+      error: 'Méthode POST non supportée pour cette route. Utilisez GET.',
+      allowedMethods: ['GET']
+    },
+    { status: 405 }
+  )
+}

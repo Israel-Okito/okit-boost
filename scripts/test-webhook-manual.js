@@ -7,7 +7,7 @@
 require('dotenv').config({ path: '.env.local' })
 
 // Utiliser une vraie transaction ID de votre base (vue dans les logs Vercel)
-const REAL_TRANSACTION_ID = "OKIT1756507623017THOHCO1A" // Transaction trouvée dans les logs
+const REAL_TRANSACTION_ID = "OKIT1756559517884PAZMYEJN" // Transaction du paiement réel récent
 
 async function testWebhookManual() {
   try {
@@ -20,16 +20,25 @@ async function testWebhookManual() {
     console.log(`Transaction ID: ${REAL_TRANSACTION_ID}`)
     console.log('')
 
-    // Simuler un webhook CinetPay de succès
-    // CinetPay envoie en application/x-www-form-urlencoded
+    // Simuler un webhook CinetPay de succès EXACTEMENT comme reçu dans les logs
+    // CinetPay V4 envoie "cpm_error_message: SUCCES"
     const webhookData = {
-      cpm_result: "00",           // Code succès CinetPay
+      cpm_site_id: process.env.CINETPAY_SITE_ID || "105905501",
       cpm_trans_id: REAL_TRANSACTION_ID,
-      cpm_trans_date: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      cpm_site_id: process.env.CINETPAY_SITE_ID || "12345",
+      cpm_trans_date: "2025-08-30 13:11:58",
       cpm_amount: "100",
       cpm_currency: "CDF",
-      signature: "manual-completion-signature" // Signature de test pour development
+      signature: "06be15cb34c02bcd8fab20898aecf9ecbceda3d83f6dcf38812b1eae53c9cffe462858",
+      payment_method: "OMCD",
+      cel_phone_num: "0854262383",
+      cpm_phone_prefixe: "243",
+      cpm_language: "fr",
+      cpm_version: "V4",
+      cpm_payment_config: "SINGLE",
+      cpm_page_action: "PAYMENT",
+      cpm_custom: '{"userId":"e7d7d114-a50d-40b5-a313-e112e10bc033","timestamp":"2025-08-30T13:11:58.023Z","version":"2.0"}',
+      cpm_designation: "Commande Okit-Boost - 1 services",
+      cpm_error_message: "SUCCES"  // LE VRAI INDICATEUR DE SUCCÈS
     }
 
     // Convertir en FormData pour simuler exactement CinetPay
