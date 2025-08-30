@@ -195,6 +195,55 @@ export async function middleware(request) {
     return response
   }
 
+  // GESTION SPÉCIALE: CinetPay fait un POST vers /paiement/success
+  // On doit le rediriger en GET pour que la page React puisse se charger
+  if (pathname === '/paiement/success' && request.method === 'POST') {
+    console.log('🔄 POST vers /paiement/success détecté - redirection en GET...')
+    
+    try {
+      // Récupérer les données du POST
+      const contentType = request.headers.get('content-type') || ''
+      let postData = {}
+      
+      if (contentType.includes('application/x-www-form-urlencoded')) {
+        const clonedRequest = request.clone()
+        const text = await clonedRequest.text()
+        const params = new URLSearchParams(text)
+        for (const [key, value] of params.entries()) {
+          postData[key] = value
+        }
+      }
+      
+      // Construire l'URL de redirection avec les paramètres
+      const redirectUrl = new URL('/paiement/success', request.url)
+      
+      // Préserver les paramètres de l'URL originale
+      const originalParams = new URL(request.url).searchParams
+      for (const [key, value] of originalParams.entries()) {
+        redirectUrl.searchParams.set(key, value)
+      }
+      
+      // Ajouter les données du POST comme paramètres
+      if (postData.transaction_id || postData.cpm_trans_id) {
+        redirectUrl.searchParams.set('transaction_id', postData.transaction_id || postData.cpm_trans_id)
+      }
+      if (postData.token) {
+        redirectUrl.searchParams.set('token', postData.token)
+      }
+      if (postData.cpm_result) {
+        redirectUrl.searchParams.set('result', postData.cpm_result)
+      }
+      
+      console.log(`Redirection: ${redirectUrl.toString()}`)
+      
+      return NextResponse.redirect(redirectUrl, { status: 302 })
+      
+    } catch (error) {
+      console.error('Erreur redirection POST /paiement/success:', error)
+      // En cas d'erreur, rediriger vers la page sans paramètres
+      return NextResponse.redirect(new URL('/paiement/success', request.url), { status: 302 })
+    }
+  }
  
   try {
     const { data: { user }, error } = await supabase.auth.getUser()
