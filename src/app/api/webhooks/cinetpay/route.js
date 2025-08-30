@@ -141,7 +141,16 @@ export async function POST(request) {
     }
 
     // 5. Traitement du paiement accepté
+    console.log('🔍 Condition traitement:', {
+      paymentStatus,
+      paymentStatusIsAccepted: paymentStatus === 'ACCEPTED',
+      transactionStatus: transaction.status,
+      transactionNotCompleted: transaction.status !== 'completed',
+      shouldProcess: paymentStatus === 'ACCEPTED' && transaction.status !== 'completed'
+    })
+    
     if (paymentStatus === 'ACCEPTED' && transaction.status !== 'completed') {
+      console.log('✅ Traitement du paiement accepté...')
       await processSuccessfulPayment(supabase, transaction, transactionId)
 
       return NextResponse.json({
@@ -149,6 +158,10 @@ export async function POST(request) {
         message: 'Paiement traité et commande créée',
         transactionId: transactionId,
         processingTime: Date.now() - startTime
+      })
+    } else {
+      console.log('⚠️  Paiement non traité:', {
+        reason: paymentStatus !== 'ACCEPTED' ? 'Statut pas ACCEPTED' : 'Transaction déjà completed'
       })
     }
 

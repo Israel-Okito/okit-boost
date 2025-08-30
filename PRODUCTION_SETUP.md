@@ -157,3 +157,109 @@ vercel logs --follow
 - [ ] Commande créée automatiquement
 - [ ] Page de succès fonctionnelle
 - [ ] Dashboard admin opérationnel
+
+
+
+
+regarde ma base de données avec ces tables : create table public.webhook_events (
+  id uuid not null default gen_random_uuid (),
+  provider character varying(50) not null,
+  event_type character varying(100) not null,
+  transaction_id character varying(255) null,
+  status character varying(50) null,
+  payload jsonb not null,
+  error_message text null,
+  processed_at timestamp with time zone null default now(),
+  created_at timestamp with time zone null default now(),
+  constraint webhook_events_pkey primary key (id)
+) TABLESPACE pg_default;
+
+create index IF not exists idx_webhook_events_provider on public.webhook_events using btree (provider) TABLESPACE pg_default;
+
+create index IF not exists idx_webhook_events_transaction_id on public.webhook_events using btree (transaction_id) TABLESPACE pg_default;
+
+create index IF not exists idx_webhook_events_created_at on public.webhook_events using btree (created_at) TABLESPACE pg_default;  create table public.payment_transactions (
+  id uuid not null default gen_random_uuid (),
+  order_id uuid null,
+  user_id uuid null,
+  transaction_id character varying(255) not null,
+  payment_token character varying(255) null,
+  amount numeric(15, 2) not null,
+  currency character varying(10) not null default 'CDF'::character varying,
+  payment_method character varying(50) null,
+  status character varying(50) null default 'pending'::character varying,
+  provider character varying(50) null default 'cinetpay'::character varying,
+  provider_response jsonb null,
+  failure_reason text null,
+  completed_at timestamp with time zone null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  customer_email text null,
+  customer_phone bigint null,
+  customer_name text null,
+  address text null,
+  city text null,
+  metadata jsonb null,
+  expires_at timestamp with time zone null,
+  constraint payment_transactions_pkey primary key (id),
+  constraint payment_transactions_transaction_id_key unique (transaction_id),
+  constraint payment_transactions_order_id_fkey foreign KEY (order_id) references orders (id) on delete CASCADE,
+  constraint payment_transactions_user_id_fkey foreign KEY (user_id) references profiles (id) on delete set null
+) TABLESPACE pg_default;
+
+create index IF not exists idx_payment_transactions_status on public.payment_transactions using btree (status) TABLESPACE pg_default;
+
+create index IF not exists idx_payment_transactions_order_id on public.payment_transactions using btree (order_id) TABLESPACE pg_default;
+
+create index IF not exists idx_payment_transactions_user_id on public.payment_transactions using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_payment_transactions_transaction_id on public.payment_transactions using btree (transaction_id) TABLESPACE pg_default;
+
+create index IF not exists idx_payment_transactions_created_at on public.payment_transactions using btree (created_at) TABLESPACE pg_default;
+
+create trigger update_payment_transactions_updated_at BEFORE
+update on payment_transactions for EACH row
+execute FUNCTION update_updated_at_column (); create table public.orders (
+  id uuid not null default extensions.uuid_generate_v4 (),
+  user_id uuid null,
+  total_usd numeric(10, 2) not null,
+  total_cdf integer not null,
+  currency text null default 'CDF'::text,
+  customer_name text not null,
+  customer_email text not null,
+  customer_phone text not null,
+  payment_method text null,
+  admin_notes text null,
+  created_at timestamp with time zone null default now(),
+  updated_at timestamp with time zone null default now(),
+  payment_transaction_id character varying(255) null,
+  status text null default 'pending'::text,
+  order_number text null,
+  constraint orders_pkey primary key (id),
+  constraint orders_user_id_fkey foreign KEY (user_id) references profiles (id) on delete CASCADE,
+  constraint orders_currency_check check (
+    (currency = any (array['USD'::text, 'CDF'::text]))
+  ),
+  constraint orders_payment_method_check check (
+    (
+      payment_method = any (
+        array['orange'::text, 'airtel'::text, 'mpesa'::text]
+      )
+    )
+  )
+) TABLESPACE pg_default;
+
+create index IF not exists idx_orders_user_id on public.orders using btree (user_id) TABLESPACE pg_default;
+
+create index IF not exists idx_orders_created_at on public.orders using btree (created_at desc) TABLESPACE pg_default;
+
+create index IF not exists idx_orders_payment_transaction_id on public.orders using btree (payment_transaction_id) TABLESPACE pg_default;
+
+create index IF not exists idx_orders_status on public.orders using btree (status) TABLESPACE pg_default;
+
+create trigger trigger_set_order_number BEFORE INSERT on orders for EACH row
+execute FUNCTION set_order_number ();
+
+create trigger update_orders_updated_at BEFORE
+update on orders for EACH row
+execute FUNCTION update_updated_at_column ();
