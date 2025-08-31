@@ -75,8 +75,6 @@ export class CinetPayService {
         })
       }
 
-      console.log('Payload CinetPay:', JSON.stringify(payload, null, 2))
-
       const response = await this.makeSecureRequest('/payment', 'POST', payload)
       
       if (response.code !== '201') {
@@ -157,7 +155,6 @@ export class CinetPayService {
    */
   processWebhookNotification(payload) {
     try {
-      console.log('Webhook reçu:', JSON.stringify(payload, null, 2))
 
       // Vérification de la signature obligatoire
       if (!this.verifyWebhookSignature(payload)) {
@@ -272,7 +269,6 @@ export class CinetPayService {
         options.body = JSON.stringify(data)
       }
 
-      console.log(`[CinetPay] ${method} ${url}`)
       
       const response = await fetch(url, options)
       clearTimeout(timeoutId)
@@ -283,8 +279,7 @@ export class CinetPayService {
 
       const result = await response.json()
       
-      // Log de la réponse pour debug
-      console.log('[CinetPay] Réponse:', JSON.stringify(result, null, 2))
+      
       
       return result
     } catch (error) {

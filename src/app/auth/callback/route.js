@@ -13,8 +13,7 @@ export async function GET(request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     
     if (!error) {
-      console.log(`✅ Authentification réussie, redirection vers: ${next}`)
-      
+  
       // URL pour rediriger vers la destination
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'

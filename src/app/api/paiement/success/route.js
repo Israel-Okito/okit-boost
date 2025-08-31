@@ -7,8 +7,7 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request) {
   try {
-    console.log('🔄 POST reçu sur /paiement/success - redirection en cours...')
-    
+  
     // Récupérer les paramètres de l'URL
     const url = new URL(request.url)
     const transactionId = url.searchParams.get('transaction_id')
@@ -24,7 +23,6 @@ export async function POST(request) {
         for (const [key, value] of params.entries()) {
           formData[key] = value
         }
-        console.log('Données POST reçues:', formData)
       }
     } catch (e) {
       console.log('Aucune donnée POST à parser')
@@ -53,8 +51,6 @@ export async function POST(request) {
     if (redirectParams.toString()) {
       redirectUrl += '?' + redirectParams.toString()
     }
-    
-    console.log(`Redirection vers: ${redirectUrl}`)
     
     // Retourner une redirection 302
     return NextResponse.redirect(

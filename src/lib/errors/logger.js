@@ -144,7 +144,6 @@ export class StructuredLogger {
     const reset = '\x1b[0m';
     const color = colors[level] || '';
 
-    console.log(`${color}${message.trim()}${reset}`);
   }
 
   /**

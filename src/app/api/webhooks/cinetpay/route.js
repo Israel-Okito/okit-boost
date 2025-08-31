@@ -5,6 +5,7 @@
  * Il met à jour la transaction et crée automatiquement les commandes pour les paiements acceptés.
  */
 
+import { createAdminClient } from "@/utils/supabase/server"
 import { createClient } from "@supabase/supabase-js"
 import { NextResponse } from "next/server"
 
@@ -34,12 +35,10 @@ export async function POST(request) {
     try {
       // D'abord, récupérer le contenu brut
       const contentType = request.headers.get('content-type') || ''
-      console.log('Content-Type received:', contentType)
       
       if (contentType.includes('application/x-www-form-urlencoded')) {
         // Traiter comme form-encoded
         const text = await request.text()
-        console.log('Raw form-encoded body:', text)
         
         const params = new URLSearchParams(text)
         for (const [key, value] of params.entries()) {
@@ -54,7 +53,6 @@ export async function POST(request) {
       } else {
         // Essayer JSON en fallback
         const text = await request.text()
-        console.log('Raw body (unknown content-type):', text)
         
         if (text.trim().startsWith('{')) {
           payload = JSON.parse(text)
@@ -74,8 +72,6 @@ export async function POST(request) {
       )
     }
     
-    // Log pour debug
-    console.log('Webhook payload parsed:', payload)
     
     if (!payload.cpm_trans_id) {
       return NextResponse.json(
@@ -85,10 +81,8 @@ export async function POST(request) {
     }
 
     // 2. Initialisation Supabase avec les permissions administrateur
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    const supabase = await createAdminClient()
+
 
     // 3. Extraction des données du webhook
     const transactionId = payload.cpm_trans_id
@@ -99,32 +93,22 @@ export async function POST(request) {
     // CinetPay utilise différents indicateurs selon la version :
     // - cpm_result: "00" (ancienne version)  
     // - cpm_error_message: "SUCCES" (nouvelle version V4)
-    console.log('🔍 Détection statut:', {
-      paymentStatus,
-      cpm_result: payload.cpm_result,
-      cpm_error_message: payload.cpm_error_message,
-      cpm_trans_status: payload.cpm_trans_status
-    })
+
     
     if (!paymentStatus) {
       if (payload.cpm_result === "00") {
         paymentStatus = "ACCEPTED"
-        console.log('✅ Statut détecté via cpm_result=00')
+   
       } else if (payload.cpm_error_message === "SUCCES") {
         paymentStatus = "ACCEPTED" 
-        console.log('✅ Statut détecté via cpm_error_message=SUCCES')
       } else if (payload.cpm_result && payload.cpm_result !== "00") {
         paymentStatus = "REFUSED"
-        console.log('❌ Statut détecté via cpm_result!=00')
       } else if (payload.cpm_error_message && payload.cpm_error_message !== "SUCCES") {
         paymentStatus = "REFUSED"
-        console.log('❌ Statut détecté via cpm_error_message!=SUCCES')
       } else {
         console.log('⚠️  Aucun indicateur de statut reconnu')
       }
     }
-    
-    console.log('🎯 Statut final:', paymentStatus)
     
     // 4. Récupération de la transaction existante
     const { data: transaction, error: transactionError } = await supabase
@@ -140,17 +124,8 @@ export async function POST(request) {
       )
     }
 
-    // 5. Traitement du paiement accepté
-    console.log('🔍 Condition traitement:', {
-      paymentStatus,
-      paymentStatusIsAccepted: paymentStatus === 'ACCEPTED',
-      transactionStatus: transaction.status,
-      transactionNotCompleted: transaction.status !== 'completed',
-      shouldProcess: paymentStatus === 'ACCEPTED' && transaction.status !== 'completed'
-    })
-    
+   
     if (paymentStatus === 'ACCEPTED' && transaction.status !== 'completed') {
-      console.log('✅ Traitement du paiement accepté...')
       await processSuccessfulPayment(supabase, transaction, transactionId)
 
       return NextResponse.json({
@@ -262,8 +237,6 @@ async function processSuccessfulPayment(supabase, transaction, transactionId) {
       .from('payment_transactions')
       .update({ order_id: order.id })
       .eq('transaction_id', transactionId)
-
-    console.log(`Commande ${order.id} créée avec succès pour transaction ${transactionId}`)
 
   } catch (error) {
     console.error('Erreur traitement paiement réussi:', error)

@@ -57,7 +57,6 @@ export const useCart = create()(
       initialize: () => {
         const state = get()
         if (state.items.some(item => item.platform && !item.platform_id)) {
-          console.log('Migrating cart items from platform to platform_id')
           state.migrateItems()
         }
       },

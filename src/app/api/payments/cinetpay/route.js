@@ -359,7 +359,6 @@ export async function updateOrderStatus(supabase, orderId, paymentStatus) {
       throw error
     }
 
-    console.log(`✅ Commande ${orderId} mise à jour: statut ${paymentStatus}`)
   } catch (error) {
     console.error("🔥 Erreur updateOrderStatus:", error)
     throw error // on relance pour que l'appelant puisse gérer

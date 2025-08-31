@@ -59,7 +59,6 @@ async function handleGetServices() {
     })
 
     const responseTime = Date.now() - startTime
-    // console.log(`⚡ Services API optimisée: ${responseTime}ms (${servicesData.length} services)`)
 
     return NextResponse.json({
       success: true,

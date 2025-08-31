@@ -3,6 +3,7 @@
  * Inclut retry automatique, logging structuré et classification d'erreurs
  */
 
+import { createAdminClient } from '@/utils/supabase/server';
 import { createClient } from '@supabase/supabase-js';
 
 // Configuration des types d'erreurs
@@ -46,10 +47,7 @@ export class ErrorHandler {
 
   async initSupabase() {
     try {
-      this.supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
+      this.supabase = await createAdminClient()
     } catch (error) {
       console.error('Failed to initialize Supabase for error logging:', error);
     }

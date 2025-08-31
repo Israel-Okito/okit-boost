@@ -73,14 +73,14 @@ export function getAllowedRedirectURLs() {
     urls.push(
       `https://${vercelDomain}/`,
       `https://${vercelDomain}/**`,
-      `https://*-${process.env.VERCEL_GIT_REPO_OWNER || 'okit-boost'}.vercel.app/**`
+      `https://*-${process.env.VERCEL_GIT_REPO_OWNER || 'okit-boost'}.com/**`
     )
   }
 
   // Si on utilise Netlify, ajouter les URLs de preview
   if (process.env.NETLIFY) {
     urls.push(
-      `https://**--${process.env.NETLIFY_SITE_NAME || 'okit-boost'}.netlify.app/**`
+      `https://**--${process.env.NETLIFY_SITE_NAME || 'okit-boost'}.vercel.app/**`
     )
   }
 

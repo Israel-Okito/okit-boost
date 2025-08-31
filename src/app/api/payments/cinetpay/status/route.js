@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { errorHandler } from '@/lib/errors/errorHandler'
 import { logger } from '@/lib/errors/logger'
+import { createAdminClient } from '@/utils/supabase/server'
 
 export async function GET(request) {
   return errorHandler.safeExecute(async () => {
@@ -20,10 +21,7 @@ export async function GET(request) {
     }
 
     // Utiliser SERVICE KEY pour accéder aux transactions
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    const supabase = await createAdminClient()
 
     // Rechercher la transaction dans la base de données
     const { data: transaction, error: transactionError } = await supabase

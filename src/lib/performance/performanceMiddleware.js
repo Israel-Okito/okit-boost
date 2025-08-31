@@ -340,7 +340,6 @@ export const performanceUtils = {
     const result = await fn()
     const duration = performance.now() - start
     
-    console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`)
     
     return { result, duration }
   },
@@ -438,7 +437,6 @@ export function initializePerformanceSystem() {
   cacheOptimizer.addRule('/platforms', 900000) // 15 minutes
   cacheOptimizer.addRule('/stats', 180000) // 3 minutes
 
-  console.log('🚀 Système de performance initialisé')
 }
 
 /**

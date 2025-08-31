@@ -116,13 +116,11 @@ export function withCache(key, fn, options = {}) {
     if (useMemory) {
       const cached = memoryCache.get(cacheKey)
       if (cached) {
-        console.log(`Cache HIT (memory): ${cacheKey}`)
         return cached
       }
     }
 
     // Exécuter la fonction
-    console.log(`Cache MISS: ${cacheKey}`)
     const result = await fn(...args)
 
     // Stocker en cache mémoire
@@ -378,7 +376,6 @@ export function invalidateCache(patterns = []) {
   // Invalidation du cache mémoire
   if (patterns.length === 0) {
     memoryCache.clear()
-    console.log('Cache mémoire entièrement vidé')
   } else {
     const keys = Array.from(memoryCache.cache.keys())
     for (const pattern of patterns) {
@@ -387,7 +384,6 @@ export function invalidateCache(patterns = []) {
         memoryCache.delete(key)
       }
     }
-    console.log(`Cache invalidé pour les patterns: ${patterns.join(', ')}`)
   }
 }
 
@@ -404,7 +400,6 @@ export function withAPICache(handler, options = {}) {
     if (request.method === 'GET') {
       const cached = memoryCache.get(cacheKey)
       if (cached) {
-        console.log(`API Cache HIT: ${cacheKey}`)
         return new Response(JSON.stringify(cached), {
           headers: {
             'Content-Type': 'application/json',
@@ -422,7 +417,6 @@ export function withAPICache(handler, options = {}) {
       try {
         const data = await response.clone().json()
         memoryCache.set(cacheKey, data, ttl * 1000)
-        console.log(`API Cache SET: ${cacheKey}`)
       } catch (error) {
         console.warn('Impossible de mettre en cache la réponse:', error)
       }
@@ -439,8 +433,6 @@ export function withAPICache(handler, options = {}) {
  * Préchargement intelligent du cache
  */
 export async function preloadCache(supabase) {
-  console.log('Préchargement du cache en cours...')
-  
   try {
     // Précharger les données essentielles
     await Promise.all([
@@ -449,7 +441,6 @@ export async function preloadCache(supabase) {
       cachedServices.getPopular(supabase)
     ])
     
-    console.log('Cache préchargé avec succès')
   } catch (error) {
     console.error('Erreur préchargement cache:', error)
   }
