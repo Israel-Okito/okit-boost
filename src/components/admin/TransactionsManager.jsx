@@ -270,7 +270,7 @@ const TransactionsManager = () => {
                 <SelectValue placeholder="Tous les statuts" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Tous les statuts</SelectItem>
+                <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="completed">Complété</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="failed">Échoué</SelectItem>

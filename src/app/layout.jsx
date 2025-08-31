@@ -23,6 +23,22 @@ export const metadata = {
   description:
     "Boostez votre présence sur les réseaux sociaux avec Okit-Boost. Obtenez de vrais abonnés, des likes et bien plus encore sur TikTok, Instagram, Facebook, YouTube et d'autres réseaux sociaux, paiement Mobile Money, support 24/7.",
   keywords: "SMM, boostage, boosting, TikTok, Facebook, Instagram, YouTube, followers, likes, vues, abonnés, Congo, RDC, Mobile Money, augmenter followers, augmenter likes, augmenter vues, augmenter abonnés, acheter followers, acheter likes, acheter vues, acheter abonnés",
+  referrer: 'origin-when-cross-origin',
+  openGraph: {
+    title: "Okit-Boost - Services de boostage pour TikTok, Instagram, Facebook & YouTube",
+    url: "https://okit-boost.com",
+    siteName: "okitdev",
+    locale: "fr, en-US",
+    type: "website",
+    description: "Boostez votre présence sur les réseaux sociaux avec Okit-Boost. Obtenez de vrais abonnés, des likes et bien plus encore sur TikTok, Instagram, Facebook, YouTube et d'autres réseaux sociaux, paiement Mobile Money, support 24/7.",
+    // images: options.ogImage,
+  },
+  alternates: {
+    canonical: "https://okit-boost.com",
+  },
+  other: {
+    "google-site-verification":"nFx89CnxidHJfJSrvdbyE9bSiKy4cPmnwO4OJjUsnMM"
+  },
 }
 
 export default function RootLayout({ children }) {
