@@ -206,18 +206,18 @@ export function ManualPayment({ cartItems, currency, onSuccess, onError }) {
                     <span className="font-medium text-orange-900">Orange Money</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-orange-700">085125555</span>
+                    <span className="text-sm text-orange-700">0854262383</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard('085125555')}
+                      onClick={() => copyToClipboard('0854262383')}
                       className="text-orange-600 hover:text-orange-700"
                     >
                       <Copy className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
-
+{/* 
                 <div className="flex flex-col p-1 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -234,7 +234,7 @@ export function ManualPayment({ cartItems, currency, onSuccess, onError }) {
                       <Copy className="w-4 h-4" />
                     </Button>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex flex-col p-1 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center space-x-2">
@@ -242,11 +242,11 @@ export function ManualPayment({ cartItems, currency, onSuccess, onError }) {
                     <span className="font-medium text-green-900">M-Pesa</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-green-700">083595255</span>
+                    <span className="text-sm text-green-700">0839148066</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard('083595255')}
+                      onClick={() => copyToClipboard('0839148066')}
                       className="text-green-600 hover:text-green-700"
                     >
                       <Copy className="w-4 h-4" />
@@ -260,11 +260,11 @@ export function ManualPayment({ cartItems, currency, onSuccess, onError }) {
                     <span className="font-medium text-purple-900">Africell</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-purple-700">090054525</span>
+                    <span className="text-sm text-purple-700">0900554141</span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard('090054525')}
+                      onClick={() => copyToClipboard('0900554141')}
                       className="text-purple-600 hover:text-purple-700"
                     >
                       <Copy className="w-4 h-4" />

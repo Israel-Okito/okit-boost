@@ -122,7 +122,7 @@ function ServiceRow({ service, index, onAddToCart, onViewDetails }) {
               {(service.price_cdf || 0).toLocaleString()} CDF
             </div>
             <div className="text-xs text-gray-500">
-              ${(service.price_usd || 0).toFixed(3)}
+              ${(service.price_usd || 0)}
             </div>
           </div>
         </div>
