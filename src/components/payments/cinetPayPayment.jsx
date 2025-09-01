@@ -69,7 +69,7 @@ export function CinetPayPayment({ cartItems, currency, onSuccess, onError }) {
       name: 'M-Pesa',
       icon: <MPesaIcon className="w-8 h-8" />,
       description: 'Paiement via M-Pesa RDC',
-      fees: 'Frais: 1.8%',
+      fees: 'Frais: 1.5%',
       available: true
     },
    

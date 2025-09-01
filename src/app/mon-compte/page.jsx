@@ -598,14 +598,14 @@ export default function AccountPage() {
                       <span className="font-medium">Téléphone: </span>
                       {selectedOrder.customer_phone}
                     </div>
-                    {selectedOrder.notes && (
+                    {/* {selectedOrder.notes && (
                       <div>
                         <span className="font-medium">Notes: </span>
                         <div className="mt-1 p-2 bg-gray-50 rounded text-sm">
                           {selectedOrder.notes}
                         </div>
                       </div>
-                    )}
+                    )} */}
                   </CardContent>
                 </Card>
               </div>

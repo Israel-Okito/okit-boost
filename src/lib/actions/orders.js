@@ -140,7 +140,7 @@ export async function uploadPaymentProof(orderId, fileData) {
     // Vérifier que la commande appartient à l'utilisateur
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, status')
+      .select('id, status, user_id')
       .eq('id', orderId)
       .eq('user_id', user.id)
       .single()
@@ -157,19 +157,23 @@ export async function uploadPaymentProof(orderId, fileData) {
     const buffer = Buffer.from(fileData.data, 'base64')
     const fileName = `payment-proofs/${orderId}-${Date.now()}.${fileData.type.split('/')[1]}`
     
+    // Utiliser directement le bucket payment-proofs qui existe
+    const bucketName = 'payment-proofs'
     const { data, error: uploadError } = await supabase.storage
-      .from('payment-proofs')
+      .from(bucketName)
       .upload(fileName, buffer, {
         contentType: fileData.type,
         cacheControl: '3600',
         upsert: false
       })
 
-    if (uploadError) throw uploadError
+    if (uploadError) {
+      throw uploadError
+    }
 
     // Obtenir l'URL publique
     const { data: { publicUrl } } = supabase.storage
-      .from('payment-proofs')
+      .from(bucketName)
       .getPublicUrl(fileName)
 
     // Mettre à jour la commande

@@ -18,7 +18,7 @@ export const orderSchema = z.object({
   customer_name: z.string().min(2, 'Nom requis (min 2 caractères)'),
   customer_email: z.string().email('Email invalide'),
   customer_phone: z.string().min(10, 'Numéro de téléphone invalide'),
-  payment_method: z.enum(['orange', 'airtel', 'mpesa', 'afrimoney'], 'Méthode de paiement invalide'),
+  payment_method: z.enum(['orange', 'airtel', 'mpesa', 'afrimoney', 'manual'], 'Méthode de paiement invalide'),
   notes: z.string().optional()
 })
 

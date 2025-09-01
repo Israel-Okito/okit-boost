@@ -19,12 +19,13 @@ import {
   ArrowLeft,
   Lock,
   Star,
-  TrendingUp
+  TrendingUp,
+  Clock
 } from "lucide-react"
 import { useCart } from "@/hooks/useCart"
 import { useAuth } from "@/lib/hooks/useAuth"
 import { toast } from "sonner"
-import { CinetPayPayment } from "@/components/payments/cinetPayPayment"
+import { ManualPayment } from "@/components/payments/ManualPayment"
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -260,30 +261,30 @@ export default function CheckoutPage() {
                   <div className="flex items-center justify-center space-x-2 mb-2">
                     <Smartphone className="w-6 h-6 text-blue-600" />
                     <span className="text-lg font-semibold">Paiement Mobile Money</span>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 max-lg:hidden">
-                      <Zap className="w-3 h-3 mr-1" />
-                      Instantané
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 max-lg:hidden">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Manuel
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Payez en toute sécurité avec Orange Money, Airtel Money, etc.
+                    Effectuez votre paiement et envoyez-nous la capture d'écran
                   </p>
                   <div className="flex items-center justify-center mt-2 space-x-2">
                     <Shield className="w-4 h-4 text-green-600" />
-                    <span className="text-xs text-green-600">Sécurisé par CinetPay</span>
+                    <span className="text-xs text-green-600">Vérification sous 30 minutes</span>
                   </div>
                 </div>
 
-                <CinetPayPayment 
+                <ManualPayment 
                   cartItems={items}
                   currency={currency}
                   onSuccess={() => {
                     clearCart()
-                    router.push('/mon-compte')
+                    router.push('/paiement/success-manual')
                   }}
                   onError={(error) => {
-                    console.error('Erreur CinetPay:', error)
-                    toast.error('Erreur lors du paiement')
+                    console.error('Erreur paiement manuel:', error)
+                    toast.error('Erreur lors du processus de paiement')
                   }}
                 />
 
@@ -294,7 +295,7 @@ export default function CheckoutPage() {
                     <span>Vos informations sont sécurisées et ne seront pas partagées avec des tiers.</span>
                   </div>
                   <p className="text-blue-600">
-                    CinetPay est un processeur de paiement certifié et sécurisé pour l'Afrique.
+                    Votre preuve de paiement sera vérifiée manuellement par notre équipe sous 30 minutes.
                   </p>
                 </div>
               </div>

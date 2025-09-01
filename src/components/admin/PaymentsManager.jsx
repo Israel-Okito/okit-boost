@@ -135,8 +135,8 @@ export function PaymentsManager() {
   const getPaymentMethodIcon = (method) => {
     if (method?.toLowerCase().includes('orange')) return '🟠'
     if (method?.toLowerCase().includes('airtel')) return '🔴'
+    if (method?.toLowerCase().includes('mpesa')) return '🔵'
     if (method?.toLowerCase().includes('mtn')) return '🟡'
-    if (method?.toLowerCase().includes('moov')) return '🔵'
     return <CreditCard className="w-4 h-4" />
   }
 
