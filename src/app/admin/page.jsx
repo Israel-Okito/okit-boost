@@ -44,18 +44,18 @@ export default function AdminPanel() {
   }, [user, profile, router])
 
   if (!user) {
-    return (
+  return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p>Vérification des autorisations...</p>
-        </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
 
   if (!profile?.admin && user?.email !== 'israelokito88@gmail.com') {
-    return (
+  return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Shield className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -63,9 +63,9 @@ export default function AdminPanel() {
           <p className="text-gray-600 mb-4">Vous n'avez pas les droits d'accès à cette page.</p>
           <Button onClick={() => router.push('/')}>
             Retour à l'accueil
-          </Button>
-        </div>
-      </div>
+                </Button>
+              </div>
+                </div>
     )
   }
 
@@ -78,12 +78,12 @@ export default function AdminPanel() {
             <div className="flex items-center space-x-2 sm:space-x-4">
               <div className="flex items-center space-x-2">
                 <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-                <div>
+                        <div>
                   <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Administration</h1>
                   <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Panneau de contrôle OKIT Boost</p>
-                </div>
-              </div>
-            </div>
+                          </div>
+                          </div>
+                        </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
               <div className="flex items-center space-x-2">
@@ -91,25 +91,25 @@ export default function AdminPanel() {
                 <div className="text-left sm:text-right">
                   <div className="text-sm font-medium truncate max-w-32 sm:max-w-none">
                     {profile?.full_name || user?.email?.split('@')[0]}
-                  </div>
+                          </div>
                   <div className="text-xs text-gray-500">Administrateur</div>
-                </div>
-              </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
+                        </div>
+                      </div>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
                 onClick={() => router.push('/')}
                 className="w-full sm:w-auto"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 <span className="sm:hidden">Retour</span>
                 <span className="hidden sm:inline">Retour au site</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+                </Button>
+              </div>
+                          </div>
+                        </div>
+                      </div>
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-8">
@@ -141,42 +141,42 @@ export default function AdminPanel() {
           {/* Version Mobile - Menu horizontal scrollable */}
           <div className="lg:hidden">
             <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-              <Button
+                          <Button
                 variant={activeTab === 'dashboard' ? 'default' : 'outline'}
-                size="sm"
+                            size="sm"
                 onClick={() => setActiveTab('dashboard')}
                 className="whitespace-nowrap flex items-center space-x-1"
               >
                 <BarChart3 className="w-3 h-3" />
                 <span className="text-xs">Tableau</span>
-              </Button>
-              <Button
+                          </Button>
+                              <Button
                 variant={activeTab === 'orders' ? 'default' : 'outline'}
-                size="sm"
+                                size="sm"
                 onClick={() => setActiveTab('orders')}
                 className="whitespace-nowrap flex items-center space-x-1"
               >
                 <ShoppingCart className="w-3 h-3" />
                 <span className="text-xs">Commandes</span>
-              </Button>
-              <Button
+                              </Button>
+                              <Button
                 variant={activeTab === 'trials' ? 'default' : 'outline'}
-                size="sm"
+                                size="sm"
                 onClick={() => setActiveTab('trials')}
                 className="whitespace-nowrap flex items-center space-x-1"
               >
                 <TestTube className="w-3 h-3" />
                 <span className="text-xs">Essais</span>
-              </Button>
-              <Button
+                              </Button>
+                            <Button
                 variant={activeTab === 'services' ? 'default' : 'outline'}
-                size="sm"
+                              size="sm"
                 onClick={() => setActiveTab('services')}
                 className="whitespace-nowrap flex items-center space-x-1"
               >
                 <Package className="w-3 h-3" />
                 <span className="text-xs">Services</span>
-              </Button>
+                            </Button>
               <Button
                 variant={activeTab === 'platforms' ? 'default' : 'outline'}
                 size="sm"
@@ -185,9 +185,9 @@ export default function AdminPanel() {
               >
                 <Monitor className="w-3 h-3" />
                 <span className="text-xs">Plateformes</span>
-              </Button>
-            </div>
-          </div>
+                </Button>
+              </div>
+              </div>
 
           <TabsContent value="dashboard" className="space-y-6">
             <Dashboard />
@@ -209,7 +209,7 @@ export default function AdminPanel() {
             <PlatformsManager />
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+                    </div>
+                  </div>
   )
 }

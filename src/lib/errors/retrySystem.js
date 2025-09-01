@@ -81,9 +81,9 @@ export class RetrySystem {
     // });
 
     for (attempts = 1; attempts <= this.config.maxAttempts; attempts++) {
+      const attemptStart = Date.now();
+      
       try {
-        const attemptStart = Date.now();
-        
         // Utiliser circuit breaker si disponible
         const result = this.circuitBreaker ?
           await this.circuitBreaker.execute(operation) :

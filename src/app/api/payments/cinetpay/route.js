@@ -30,14 +30,22 @@ async function handlePaymentCreation(request) {
       validateCinetpayConfig();
     }, RETRY_CONFIGS.api);
 
-    supabase = await createClient();
-    
-    // Vérification de l'authentification
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    try {
+      supabase = await createClient();
+      
+      // Vérification de l'authentification
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Authentification requise' }, 
+          { status: 401 }
+        )
+      }
+    } catch (error) {
+      console.error('Erreur Supabase:', error.message)
       return NextResponse.json(
-        { error: 'Authentification requise' }, 
-        { status: 401 }
+        { error: 'Erreur d\'authentification' }, 
+        { status: 500 }
       )
     }
 

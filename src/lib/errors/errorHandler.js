@@ -42,12 +42,15 @@ const RETRY_CONFIG = {
 export class ErrorHandler {
   constructor() {
     this.supabase = null;
-    this.initSupabase();
+    this.supabaseInitialized = false;
   }
 
   async initSupabase() {
+    if (this.supabaseInitialized) return;
+    
     try {
       this.supabase = await createAdminClient()
+      this.supabaseInitialized = true;
     } catch (error) {
       console.error('Failed to initialize Supabase for error logging:', error);
     }
@@ -206,9 +209,10 @@ export class ErrorHandler {
    * Log vers la base de données
    */
   async logToDatabase(errorContext) {
-    if (!this.supabase) return;
-
     try {
+      await this.initSupabase();
+      if (!this.supabase) return;
+
       await this.supabase
         .from('error_logs')
         .insert({

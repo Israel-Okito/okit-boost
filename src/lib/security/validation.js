@@ -66,7 +66,7 @@ export const secureSchemas = {
       total_cdf: z.number().min(0).max(1000000000)
     })).min(1).max(50), // Max 50 items
     currency: z.enum(['USD', 'CDF']),
-    paymentMethod: z.enum(['orange', 'airtel', 'mtn', 'moov']),
+    paymentMethod: z.enum(['orange', 'airtel', 'mpesa']),
     customerData: z.object({
       name: z.string().min(2).max(100).regex(/^[a-zA-ZÀ-ÿ\s\-']+$/, 'Nom invalide'),
       email: z.string().email('Email invalide').max(254),
