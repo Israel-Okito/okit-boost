@@ -17,6 +17,7 @@ async function handlePaymentCreation(request) {
   const requestId = errorHandler.generateErrorId()
   let supabase
   let transactionRecord = null
+  let user = null
 
   return await errorHandler.safeExecute(async () => {
     await logger.info('Payment creation started', {
@@ -34,13 +35,14 @@ async function handlePaymentCreation(request) {
       supabase = await createClient();
       
       // Vérification de l'authentification
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (!authUser) {
         return NextResponse.json(
           { error: 'Authentification requise' }, 
           { status: 401 }
         )
       }
+      user = authUser
     } catch (error) {
       console.error('Erreur Supabase:', error.message)
       return NextResponse.json(
